@@ -8,7 +8,7 @@ export interface ProfileWithTokenId extends Profile {
     token_id: string;
 }
 
-const PROFILES_TABLE = "a_profiles";
+const PROFILES_TABLE = "a_members";
 
 export const insertAnonymousProfile = async (
     client: SupabaseClient,
