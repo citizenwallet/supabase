@@ -14,7 +14,6 @@ import {
   type TransactionWithDescription,
   upsertTransactionWithDescription,
 } from "../_db/transactions.ts";
-import { findOrdersWithTxHash, setOrderDescription } from "../_db/orders.ts";
 import { getLogByHash } from "../_db/logs.ts";
 
 Deno.serve(async (req) => {
@@ -53,22 +52,6 @@ Deno.serve(async (req) => {
     community.primaryToken.chain_id,
     hash,
   );
-
-  if (log && erc20TransferExtraData.description) {
-    const { data: orders } = await findOrdersWithTxHash(
-      supabaseClient,
-      log.tx_hash,
-    );
-    if (orders && orders.length > 0) {
-      for (const order of orders) {
-        await setOrderDescription(
-          supabaseClient,
-          order.id,
-          erc20TransferExtraData.description,
-        );
-      }
-    }
-  }
 
   const { error } = await upsertTransactionWithDescription(
     supabaseClient,
