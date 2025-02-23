@@ -20,7 +20,7 @@ export interface TransactionWithDescription {
     description: string;
 }
 
-const TRANSACTIONS_TABLE = "a_transactions";
+const TRANSACTIONS_TABLE = "a_transfers";
 
 export const upsertTransaction = (
     client: SupabaseClient,
