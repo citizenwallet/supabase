@@ -10,11 +10,33 @@ import {
   communityConfig,
   createERC20TransferNotification,
   type ERC20TransferData,
+  getCommunityConfigsFromUrl,
 } from "../_citizen-wallet/index.ts";
 import type { Profile } from "jsr:@citizenwallet/sdk";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { getTokensForAddress } from "../_db/tokens.ts";
 import { getProfile } from "../_db/profiles.ts";
+
+/**
+ * Example record:
+ * {
+ *   "data": {
+ *     "to": "0x5566D6D4Df27a6fD7856b7564F81266863Ba3ee8",
+ *     "from": "0x20eC5EAF89C0e06243eE39674844BF77edB43fCc",
+ *     "topic": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+ *     "value": "100000"
+ *   },
+ *   "dest": "0x5815E61eF72c9E6107b5c5A05FD121F334f7a7f1",
+ *   "hash": "0xd3587bcb15230bdc9a2cf7f81641798f47d091d0a6b8277c0993d643e027e900",
+ *   "nonce": 0,
+ *   "value": "0",
+ *   "sender": "",
+ *   "status": "success",
+ *   "tx_hash": "0x1b8f3931e81e1cf6a3215d4763de52df86deaa2215c77cc8c44381d5fe8861c8",
+ *   "created_at": "2025-02-23T14:30:35",
+ *   "updated_at": "2025-02-23T14:30:36.349932"
+ * }
+ */
 
 Deno.serve(async (req) => {
   const { record } = await req.json();
@@ -33,13 +55,26 @@ Deno.serve(async (req) => {
       { status: 400 },
     );
   }
+  const tokenContract = dest.toLowerCase();
 
   const community = communityConfig();
+  const communityConfigs = await getCommunityConfigsFromUrl();
 
-  if (dest.toLowerCase() !== community.primaryToken.address.toLowerCase()) {
-    return new Response("Only process primary token transfers", {
-      status: 200,
-    });
+  if (communityConfigs.length === 0) {
+    return new Response("No community configs found", { status: 400 });
+  }
+
+  const communitiesWithDest = communityConfigs.filter((config) =>
+    config.community.primary_token.address.toLowerCase() === tokenContract
+  );
+
+  if (communitiesWithDest.length === 0) {
+    return new Response(
+      `No community found with token contract ${tokenContract}`,
+      {
+        status: 400,
+      },
+    );
   }
 
   if (status !== "success") {
