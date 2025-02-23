@@ -49,8 +49,11 @@ export const getCommunityConfigsFromUrl = async (): Promise<
         }
 
         const communitiesJson = await response.json();
+
         return communitiesJson.map((community: any) =>
             new CommunityConfig(community)
+        ).filter(
+            (community: CommunityConfig) => !community.config.community.hidden, // FIXME: fix type in SDK
         );
     } catch (error) {
         console.error("Error fetching communities:", error);
