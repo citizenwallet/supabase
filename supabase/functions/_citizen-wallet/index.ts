@@ -5,6 +5,10 @@ import communityJson from "./community.json" with {
     type: "json",
 };
 
+// Define under the functions service in docker-compose.yml of the supabase clone.
+// Define value in docker/.env
+const COMMUNITIES_CONFIG_URL = Deno.env.get("COMMUNITIES_CONFIG_URL");
+
 export interface Notification {
     title: string;
     body: string;
@@ -26,6 +30,32 @@ export interface MetadataUpdateData {
 
 export const communityConfig = () => {
     return new CommunityConfig(communityJson);
+};
+
+export const getCommunityConfigsFromUrl = async (): Promise<
+    CommunityConfig[]
+> => {
+    if (!COMMUNITIES_CONFIG_URL) {
+        throw new Error(
+            "COMMUNITIES_CONFIG_URL environment variable is not set",
+        );
+    }
+
+    try {
+        const response = await fetch(COMMUNITIES_CONFIG_URL);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const communitiesJson = await response.json();
+        return communitiesJson.map((community: any) =>
+            new CommunityConfig(community)
+        );
+    } catch (error) {
+        console.error("Error fetching communities:", error);
+        throw error;
+    }
 };
 
 export const formatERC20TransactionValue = (
