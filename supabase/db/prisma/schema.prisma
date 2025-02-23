@@ -80,3 +80,78 @@ model t_sponsors_100 {
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
 }
+
+model Members {
+  account      String
+  contract     String
+  username     String  @default("anonymous")
+  name         String  @default("Anonymous")
+  description  String  @default("this user does not have a profile")
+  image        String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  image_medium String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  image_small  String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  token_id     String?
+
+  // Add relations
+  sent_transfers     Transfers[]    @relation("SentTransfers")
+  received_transfers Transfers[]    @relation("ReceivedTransfers")
+  interactions       Interactions[] @relation("MemberInteractions")
+  with_interactions  Interactions[] @relation("WithMemberInteractions")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@id([account, contract]) // composite primary key
+  @@index([account])
+  @@index([contract])
+  @@index([account, contract])
+  @@map("a_members")
+}
+
+
+model Transfers {
+  id            String         @id
+  hash          String
+  from_account  String
+  from_contract String
+  to_account    String
+  to_contract   String
+  value         String         @default("0")
+  description   String         @default("")
+  status        String         @default("pending")
+
+  // Add relations
+  sender       Members        @relation("SentTransfers", fields: [from_account, from_contract], references: [account, contract])
+  receiver     Members        @relation("ReceivedTransfers", fields: [to_account, to_contract], references: [account, contract])
+  interactions Interactions[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([from_account])
+  @@index([from_contract])
+  @@index([to_account])
+  @@index([to_contract])
+  @@index([from_account, from_contract])
+  @@index([to_account, to_contract])
+  @@map("a_transfers")
+}
+
+model Interactions {
+  id String @id @default(uuid())
+
+  transfer_id String
+  transfer    Transfers @relation(fields: [transfer_id], references: [id])
+
+  account          String
+  account_contract String
+  with             String
+  with_contract    String
+  member           Members @relation("MemberInteractions", fields: [account, account_contract], references: [account, contract])
+  with_member      Members @relation("WithMemberInteractions", fields: [with, with_contract], references: [account, contract])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("a_interactions")
+}
