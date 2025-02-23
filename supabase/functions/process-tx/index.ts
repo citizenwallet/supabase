@@ -14,12 +14,7 @@ import { getServiceRoleClient } from "../_db/index.ts";
 import { type Transaction, upsertTransaction } from "../_db/transactions.ts";
 import { upsertInteraction } from "../_db/interactions.ts";
 import { ensureProfileExists } from "../_citizen-wallet/profiles.ts";
-import {
-  createPaidOrder,
-  findOrdersWithTxHash,
-  updateOrderPaid,
-} from "../_db/orders.ts";
-import { getPlacesByAccount } from "../_db/places.ts";
+
 
 Deno.serve(async (req) => {
   const { record } = await req.json();
@@ -80,58 +75,16 @@ Deno.serve(async (req) => {
     status: status,
   };
 
-  // create order if it doesn't exist and destination is a place
-  const { data: orders } = await findOrdersWithTxHash(
-    supabaseClient,
-    tx_hash,
-  );
-  if (!orders || orders.length === 0) {
-    const { data: places } = await getPlacesByAccount(
-      supabaseClient,
-      erc20TransferData.to,
-    );
-
-    const place = places?.[0] ?? null;
-    if (place) {
-      await createPaidOrder(
-        supabaseClient,
-        place.id,
-        parseFloat(formattedValue) * 100,
-        tx_hash,
-        erc20TransferData.from,
-      );
-    }
-  } else {
-    if (orders && orders.length > 0) {
-      for (const order of orders) {
-        await updateOrderPaid(supabaseClient, order.id);
-      }
-    }
-  }
-
   const { error } = await upsertTransaction(supabaseClient, transaction);
 
   if (error) {
     console.error("Error inserting transaction:", error);
   }
 
-  let { data: accountPlaces } = await getPlacesByAccount(
-    supabaseClient,
-    erc20TransferData.to,
-  );
-  if (!accountPlaces || accountPlaces.length === 0) {
-    ({ data: accountPlaces } = await getPlacesByAccount(
-      supabaseClient,
-      erc20TransferData.from,
-    ));
-  }
-
-  const placeId = accountPlaces?.[0]?.id ?? null;
 
   await upsertInteraction(
     supabaseClient,
     transaction,
-    placeId,
   );
 
   return new Response("transaction processed", { status: 200 });
