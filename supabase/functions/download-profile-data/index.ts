@@ -59,16 +59,9 @@ Deno.serve(async (req) => {
         return new Response("No community configs found", { status: 400 });
     }
 
-    const communityMap = new Map(
-        communityConfigs.map((config) => [
-            config.config.community.profile.address.toLowerCase(),
-            config,
-        ]),
+    const communitiesWithDest = communityConfigs.filter((config) =>
+        config.community.profile.address === profileContract
     );
-
-    const communitiesWithDest = Array.from(communityMap.entries())
-        .filter(([address]) => address === dest.toLowerCase())
-        .map(([_, config]) => config);
 
     if (communitiesWithDest.length === 0) {
         return new Response(
