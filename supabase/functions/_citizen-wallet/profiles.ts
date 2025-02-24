@@ -34,6 +34,7 @@ export const ensureProfileExists = async (
             await insertAnonymousProfile(
                 client,
                 address,
+                config.community.profile.address,
             );
         }
     }
