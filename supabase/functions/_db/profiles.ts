@@ -13,6 +13,7 @@ const PROFILES_TABLE = "a_members";
 export const insertAnonymousProfile = async (
     client: SupabaseClient,
     account: string,
+    contract: string,
 ): Promise<PostgrestSingleResponse<null>> => {
     const defaultProfileImageIpfsHash = Deno.env.get(
         "DEFAULT_PROFILE_IMAGE_IPFS_HASH",
@@ -28,6 +29,7 @@ export const insertAnonymousProfile = async (
 
     const profile: Profile = formatProfileImageLinks(ipfsUrl, {
         account,
+        contract, // FIXME: add contract attribute to type Profile in SDK
         username: "anonymous",
         name: "Anonymous",
         description: "This user does not have a profile",
