@@ -12,7 +12,7 @@ import {
   type ERC20TransferData,
   getCommunityConfigsFromUrl,
 } from "../_citizen-wallet/index.ts";
-import type { Profile } from "jsr:@citizenwallet/sdk";
+import type { Profile } from "npm:@citizenwallet/sdk";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { getTokensForAddress } from "../_db/tokens.ts";
 import { getProfile } from "../_db/profiles.ts";
