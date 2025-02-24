@@ -52,7 +52,9 @@ export const upsertProfile = async (
 export const getProfile = async (
     client: SupabaseClient,
     account: string,
+    contract: string,
 ): Promise<PostgrestSingleResponse<Profile | null>> => {
-    return client.from(PROFILES_TABLE).select().eq("account", account)
+    return client.from(PROFILES_TABLE).select().ilike("account", account)
+        .ilike("contract", contract)
         .maybeSingle();
 };
