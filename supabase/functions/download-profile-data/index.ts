@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
 
     // fetch the profile
     const profile = await getProfileFromId(
+        community.ipfs.url,
         community,
         metadataUpdateData._tokenId,
     );
