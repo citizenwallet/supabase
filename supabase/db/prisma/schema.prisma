@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NOTE: created and modified by dApp engine
 model t_events_100 {
   contract        String
   event_signature String
@@ -21,7 +20,6 @@ model t_events_100 {
 }
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
-// NOTE: created and modified by dApp engine
 model t_logs_100 {
   hash       String   @id
   tx_hash    String
@@ -39,7 +37,6 @@ model t_logs_100 {
   @@index([tx_hash], map: "idx_logs_100_tx_hash")
 }
 
-// NOTE: created and modified by dApp engine
 model t_logs_data_100 {
   hash       String   @id
   data       Json?
@@ -49,7 +46,6 @@ model t_logs_data_100 {
   @@index([hash], map: "idx_logs_data_100_hash")
 }
 
-// NOTE: created and modified by dApp engine
 model t_push_token_100_0x56cc38bda01be6ec6d854513c995f6621ee71229 {
   token      String
   account    String
@@ -61,7 +57,6 @@ model t_push_token_100_0x56cc38bda01be6ec6d854513c995f6621ee71229 {
   @@index([token, account], map: "idx_push_100_0x__e71229_token_account")
 }
 
-// NOTE: created and modified by dApp engine
 model t_push_token_100_0x5815e61ef72c9e6107b5c5a05fd121f334f7a7f1 {
   token      String
   account    String
@@ -73,83 +68,9 @@ model t_push_token_100_0x5815e61ef72c9e6107b5c5a05fd121f334f7a7f1 {
   @@index([token, account], map: "idx_push_100_0x__f7a7f1_token_account")
 }
 
-// NOTE: created and modified by dApp engine
 model t_sponsors_100 {
   contract   String   @id
   pk         String
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
-}
-
-model Members {
-  account_contract String
-  account          String
-  contract         String // primary profile contract address
-  username         String  @default("anonymous")
-  name             String  @default("Anonymous")
-  description      String  @default("this user does not have a profile")
-  image            String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
-  image_medium     String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
-  image_small      String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
-  token_id         String?
-
-  // Add relations
-  interactions       Interactions[] @relation("MemberInteractions")
-  sent_transfers     Transfers[]    @relation("SentTransfers")
-  received_transfers Transfers[]    @relation("ReceivedTransfers")
-  with_interactions  Interactions[] @relation("WithMemberInteractions")
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  @@id([account_contract]) // composite primary key
-  @@index([account])
-  @@index([contract])
-  @@index([account, contract])
-  @@map("a_members")
-}
-
-model Transfers {
-  id            String @id
-  hash          String
-  from_account  String
-  from_contract String // primary token contract address
-  to_account    String
-  to_contract   String // primary token contract address
-  value         String @default("0")
-  description   String @default("")
-  status        String @default("pending")
-
-  // Add relations
-  sender       Members        @relation("SentTransfers", fields: [from_account], references: [account_contract])
-  receiver     Members        @relation("ReceivedTransfers", fields: [to_account], references: [account_contract])
-  interactions Interactions[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  @@index([from_account])
-  @@index([from_contract])
-  @@index([to_account])
-  @@index([to_contract])
-  @@index([from_account, from_contract])
-  @@index([to_account, to_contract])
-  @@map("a_transfers")
-}
-
-model Interactions {
-  id String @id @default(uuid())
-
-  transfer_id String
-  transfer    Transfers @relation(fields: [transfer_id], references: [id])
-
-  account     String
-  with        String
-  member      Members @relation("MemberInteractions", fields: [account], references: [account_contract])
-  with_member Members @relation("WithMemberInteractions", fields: [with], references: [account_contract])
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  @@map("a_interactions")
 }
