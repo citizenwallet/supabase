@@ -99,7 +99,7 @@ model Members {
   with_interactions  Interactions[] @relation("WithMemberInteractions")
 
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime @default(now())
 
   @@id([account, contract]) // composite primary key
   @@index([account])
