@@ -12,7 +12,7 @@ import {
 } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { upsertProfile } from "../_db/profiles.ts";
-import { getProfileFromId } from "jsr:@citizenwallet/sdk";
+import { getProfileFromId } from "npm:@citizenwallet/sdk";
 
 /**
  * Example record:
