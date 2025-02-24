@@ -6,7 +6,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import {
-    communityConfig,
     getCommunityConfigsFromUrl,
     type MetadataUpdateData,
 } from "../_citizen-wallet/index.ts";
@@ -51,8 +50,6 @@ Deno.serve(async (req) => {
         );
     }
     const profileContract = dest.toLowerCase();
-
-    const community = communityConfig();
     const communityConfigs = await getCommunityConfigsFromUrl();
 
     if (communityConfigs.length === 0) {
@@ -60,7 +57,7 @@ Deno.serve(async (req) => {
     }
 
     const communitiesWithDest = communityConfigs.filter((config) =>
-        config.community.profile.address === profileContract
+        config.community.profile.address.toLowerCase() === profileContract
     );
 
     if (communitiesWithDest.length === 0) {
@@ -78,32 +75,32 @@ Deno.serve(async (req) => {
         });
     }
 
-    const metadataUpdateData = data as MetadataUpdateData;
-
-    // fetch the profile
-    const profile = await getProfileFromId(
-        community.ipfs.url,
-        community,
-        metadataUpdateData._tokenId,
-    );
-
-    if (!profile) {
-        return new Response("Profile not found, ignore", { status: 200 });
-    }
-
     // Initialize Supabase client with service role key
     const supabaseClient = getServiceRoleClient();
 
-    const result = await upsertProfile(
-        supabaseClient,
-        profile,
-        community.community.profile.address,
-    );
+    for (const community of communitiesWithDest) {
+        const metadataUpdateData = data as MetadataUpdateData;
 
-    console.log(result);
+        const profile = await getProfileFromId(
+            community.ipfs.url,
+            community,
+            metadataUpdateData._tokenId,
+        );
 
-    if (result.error) {
-        console.error(result.error);
+        if (!profile) {
+            console.log("profile not found, ignoring");
+            continue;
+        }
+
+        const result = await upsertProfile(
+            supabaseClient,
+            profile,
+            community.community.profile.address,
+        );
+
+        if (result.error) {
+            console.error(result.error);
+        }
     }
 
     return new Response("notification sent", { status: 200 });
