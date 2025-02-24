@@ -81,7 +81,8 @@ model t_sponsors_100 {
 }
 
 model Members {
-  account          String   @id
+  id               String   @id // ${account}:${profile_contract}
+  account          String
   profile_contract String // primary profile contract address
   username         String   @default("anonymous")
   name             String   @default("Anonymous")
@@ -93,10 +94,10 @@ model Members {
   created_at       DateTime @default(now())
   updated_at       DateTime @default(now())
 
-  sent_transfers         Transfers[]    @relation("FromAccount")
-  received_transfers     Transfers[]    @relation("ToAccount")
-  interactions_as_user   Interactions[] @relation("UserInteractions")
-  interactions_as_target Interactions[] @relation("TargetInteractions")
+  sent_transfers                Transfers[]    @relation("FromAccount")
+  received_transfers            Transfers[]    @relation("ToAccount")
+  interactions_as_first_person  Interactions[] @relation("FirstPersonInteractions")
+  interactions_as_second_person Interactions[] @relation("SecondPersonInteractions")
 
   @@map("a_members")
 }
@@ -104,8 +105,8 @@ model Members {
 model Transfers {
   id             String   @id
   hash           String
-  from_account   String
-  to_account     String
+  from_member_id String
+  to_member_id   String
   token_contract String // primary token contract address
   value          String   @default("0")
   description    String   @default("")
@@ -113,25 +114,25 @@ model Transfers {
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
-  sender       Members        @relation("FromAccount", fields: [from_account], references: [account])
-  receiver     Members        @relation("ToAccount", fields: [to_account], references: [account])
+  from_member  Members        @relation("FromAccount", fields: [from_member_id], references: [id], onDelete: Cascade)
+  to_member    Members        @relation("ToAccount", fields: [to_member_id], references: [id], onDelete: Cascade)
   interactions Interactions[]
 
   @@map("a_transfers")
 }
 
 model Interactions {
-  id              String   @id @default(uuid())
-  transfer_id     String
-  account         String
-  with            String
-  new_interaction Boolean  @default(false)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @default(now())
+  id                      String   @id @default(uuid())
+  transfer_id             String
+  first_person_member_id  String
+  second_person_member_id String
+  new_interaction         Boolean  @default(false)
+  created_at              DateTime @default(now())
+  updated_at              DateTime @default(now())
 
-  transfer Transfers @relation(fields: [transfer_id], references: [id])
-  user     Members   @relation("UserInteractions", fields: [account], references: [account])
-  target   Members   @relation("TargetInteractions", fields: [with], references: [account])
+  transfer             Transfers @relation(fields: [transfer_id], references: [id], onDelete: Cascade)
+  first_person_member  Members   @relation("FirstPersonInteractions", fields: [first_person_member_id], references: [id], onDelete: Cascade)
+  second_person_member Members   @relation("SecondPersonInteractions", fields: [second_person_member_id], references: [id], onDelete: Cascade)
 
   @@map("a_interactions")
 }
