@@ -134,5 +134,6 @@ model Interactions {
   first_person_member  Members   @relation("FirstPersonInteractions", fields: [first_person_member_id], references: [id], onDelete: Cascade)
   second_person_member Members   @relation("SecondPersonInteractions", fields: [second_person_member_id], references: [id], onDelete: Cascade)
 
+ @@unique([transfer_id, first_person_member_id, second_person_member_id])
   @@map("a_interactions")
 }
