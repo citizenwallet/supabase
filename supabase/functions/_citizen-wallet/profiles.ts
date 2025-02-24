@@ -2,7 +2,7 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import {
     type CommunityConfig,
     getProfileFromAddress,
-} from "jsr:@citizenwallet/sdk";
+} from "npm:@citizenwallet/sdk";
 import {
     getProfile,
     insertAnonymousProfile,

@@ -1,4 +1,4 @@
-import { formatProfileImageLinks, type Profile } from "jsr:@citizenwallet/sdk";
+import { formatProfileImageLinks, type Profile } from "npm:@citizenwallet/sdk";
 import type {
     PostgrestSingleResponse,
     SupabaseClient,

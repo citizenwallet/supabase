@@ -1,6 +1,9 @@
 {
   "version": "4",
   "specifiers": {
+    "jsr:@supabase/supabase-js@2": "2.47.10",
+    "npm:@citizenwallet/sdk@*": "2.0.70_react@18.3.1",
+    "npm:@citizenwallet/sdk@^2.0.70": "2.0.70_react@18.3.1",
     "npm:@supabase/auth-js@2.67.3": "2.67.3",
     "npm:@supabase/functions-js@2.4.4": "2.4.4",
     "npm:@supabase/node-fetch@2.6.15": "2.6.15",
@@ -16,9 +19,34 @@
     "npm:firebase-admin@^12.7.0": "12.7.0",
     "npm:openai@^4.52.5": "4.77.3"
   },
+  "jsr": {
+    "@supabase/supabase-js@2.47.10": {
+      "integrity": "5728bf949038b3dec6eeee6dce7a26d7d3ad45332bbddb199aebbe9f48bab0d0",
+      "dependencies": [
+        "npm:@supabase/auth-js",
+        "npm:@supabase/functions-js",
+        "npm:@supabase/node-fetch",
+        "npm:@supabase/postgrest-js",
+        "npm:@supabase/realtime-js",
+        "npm:@supabase/storage-js"
+      ]
+    }
+  },
   "npm": {
     "@adraffy/ens-normalize@1.10.1": {
       "integrity": "sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw=="
+    },
+    "@citizenwallet/sdk@2.0.70_react@18.3.1": {
+      "integrity": "sha512-KWxQ41tHRVKZB1kwwn9ewppTBh9KM0MjLSIP9LLJeqZJon51hUO/avz4+PdpZqe8DL6ZlCIKP+P0OrDtmQLIFw==",
+      "dependencies": [
+        "@openzeppelin/contracts-upgradeable",
+        "dotenv",
+        "ethers",
+        "fflate",
+        "react",
+        "typescript",
+        "zustand"
+      ]
     },
     "@fastify/busboy@3.1.1": {
       "integrity": "sha512-5DGmA8FTdB2XbDeEwc/5ZXBl6UbBAyBOOLlPuBnZ/N1SwdH9Ii+cOX3tBROlDgcTXxjOYnLMVoKk9+FXAw0CJw=="
@@ -154,6 +182,15 @@
     },
     "@opentelemetry/api@1.9.0": {
       "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="
+    },
+    "@openzeppelin/contracts-upgradeable@5.2.0_@openzeppelin+contracts@5.2.0": {
+      "integrity": "sha512-mZIu9oa4tQTlGiOJHk6D3LdJlqFqF6oNOSn6S6UVJtzfs9UsY9/dhMEbAVTwElxUtJnjpf6yA062+oBp+eOyPg==",
+      "dependencies": [
+        "@openzeppelin/contracts"
+      ]
+    },
+    "@openzeppelin/contracts@5.2.0": {
+      "integrity": "sha512-bxjNie5z89W1Ea0NZLZluFh8PrFNn9DH8DQlujEok2yjsOlraUPKID5p1Wk3qdNbf6XkQ1Os2RvfiHrrXLHWKA=="
     },
     "@protobufjs/aspromise@1.1.2": {
       "integrity": "sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ=="
@@ -433,6 +470,9 @@
     "delayed-stream@1.0.0": {
       "integrity": "sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ=="
     },
+    "dotenv@16.4.7": {
+      "integrity": "sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ=="
+    },
     "duplexify@4.1.3": {
       "integrity": "sha512-M3BmBhwJRZsSx38lZyhE53Csddgzl5R7xGJNk7CVddZD6CcmwMCH8J+7AprIrQKH7TonKxaCjcv27Qmf+sQ+oA==",
       "dependencies": [
@@ -646,6 +686,9 @@
     "jose@4.15.9": {
       "integrity": "sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA=="
     },
+    "js-tokens@4.0.0": {
+      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
+    },
     "json-bigint@1.0.0": {
       "integrity": "sha512-SiPv/8VpZuWbvLSMtTDU8hEfrZWg/mH/nV/b4o0CYbSxu1UIQPLdwKOCIyLQX+VIPO5vrLX3i8qtqFyhdPSUSQ==",
       "dependencies": [
@@ -741,6 +784,12 @@
     "long@5.2.3": {
       "integrity": "sha512-lcHwpNoggQTObv5apGNCTdJrO69eHOZMi4BNC+rTLER8iHAqGrUVeLh/irVIM7zTw2bOXA8T6uNPeujwOLg/2Q=="
     },
+    "loose-envify@1.4.0": {
+      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
+      "dependencies": [
+        "js-tokens"
+      ]
+    },
     "lru-cache@6.0.0": {
       "integrity": "sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==",
       "dependencies": [
@@ -831,6 +880,12 @@
         "long"
       ]
     },
+    "react@18.3.1": {
+      "integrity": "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==",
+      "dependencies": [
+        "loose-envify"
+      ]
+    },
     "readable-stream@3.6.2": {
       "integrity": "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==",
       "dependencies": [
@@ -910,6 +965,9 @@
     "tslib@2.7.0": {
       "integrity": "sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA=="
     },
+    "typescript@5.7.3": {
+      "integrity": "sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw=="
+    },
     "undici-types@5.26.5": {
       "integrity": "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="
     },
@@ -918,6 +976,12 @@
     },
     "undici-types@6.20.0": {
       "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg=="
+    },
+    "use-sync-external-store@1.4.0_react@18.3.1": {
+      "integrity": "sha512-9WXSPC5fMv61vaupRkCKCxsPxBocVnwakBEkMIHHpkTTg6icbJtg6jzgtLDm4bl3cSHAca52rYWih0k4K3PfHw==",
+      "dependencies": [
+        "react"
+      ]
     },
     "util-deprecate@1.0.2": {
       "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw=="
@@ -995,6 +1059,13 @@
     },
     "yocto-queue@0.1.0": {
       "integrity": "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="
+    },
+    "zustand@4.5.6_react@18.3.1": {
+      "integrity": "sha512-ibr/n1hBzLLj5Y+yUcU7dYw8p6WnIVzdJbnX+1YpaScvZVF2ziugqHs+LAmHw4lWO9c/zRj+K1ncgWDQuthEdQ==",
+      "dependencies": [
+        "react",
+        "use-sync-external-store"
+      ]
     }
   },
   "remote": {
@@ -1012,10 +1083,10 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@citizenwallet/sdk@^2.0.13",
       "jsr:@std/assert@1",
       "jsr:@supabase/functions-js@^2.4.3",
       "jsr:@supabase/supabase-js@^2.46.0",
+      "npm:@citizenwallet/sdk@^2.0.70",
       "npm:ethers@^6.13.4",
       "npm:firebase-admin@^12.7.0"
     ]
