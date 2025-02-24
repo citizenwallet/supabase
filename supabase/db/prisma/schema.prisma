@@ -121,12 +121,13 @@ model Transfers {
 }
 
 model Interactions {
-  id          String   @id @default(uuid())
-  transfer_id String
-  account     String
-  with        String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id              String   @id @default(uuid())
+  transfer_id     String
+  account         String
+  with            String
+  new_interaction Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now())
 
   transfer Transfers @relation(fields: [transfer_id], references: [id])
   user     Members   @relation("UserInteractions", fields: [account], references: [account])
