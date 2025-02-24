@@ -82,51 +82,51 @@ model t_sponsors_100 {
 }
 
 model Members {
-  account      String
-  contract     String
-  username     String  @default("anonymous")
-  name         String  @default("Anonymous")
-  description  String  @default("this user does not have a profile")
-  image        String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
-  image_medium String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
-  image_small  String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
-  token_id     String?
+  account_contract String
+  account          String
+  contract         String // primary profile contract address
+  username         String  @default("anonymous")
+  name             String  @default("Anonymous")
+  description      String  @default("this user does not have a profile")
+  image            String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  image_medium     String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  image_small      String  @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  token_id         String?
 
   // Add relations
+  interactions       Interactions[] @relation("MemberInteractions")
   sent_transfers     Transfers[]    @relation("SentTransfers")
   received_transfers Transfers[]    @relation("ReceivedTransfers")
-  interactions       Interactions[] @relation("MemberInteractions")
   with_interactions  Interactions[] @relation("WithMemberInteractions")
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
-  @@id([account, contract]) // composite primary key
+  @@id([account_contract]) // composite primary key
   @@index([account])
   @@index([contract])
   @@index([account, contract])
   @@map("a_members")
 }
 
-
 model Transfers {
-  id            String         @id
+  id            String @id
   hash          String
   from_account  String
-  from_contract String
+  from_contract String // primary token contract address
   to_account    String
-  to_contract   String
-  value         String         @default("0")
-  description   String         @default("")
-  status        String         @default("pending")
+  to_contract   String // primary token contract address
+  value         String @default("0")
+  description   String @default("")
+  status        String @default("pending")
 
   // Add relations
-  sender       Members        @relation("SentTransfers", fields: [from_account, from_contract], references: [account, contract])
-  receiver     Members        @relation("ReceivedTransfers", fields: [to_account, to_contract], references: [account, contract])
+  sender       Members        @relation("SentTransfers", fields: [from_account], references: [account_contract])
+  receiver     Members        @relation("ReceivedTransfers", fields: [to_account], references: [account_contract])
   interactions Interactions[]
 
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime @default(now())
 
   @@index([from_account])
   @@index([from_contract])
@@ -143,15 +143,13 @@ model Interactions {
   transfer_id String
   transfer    Transfers @relation(fields: [transfer_id], references: [id])
 
-  account          String
-  account_contract String
-  with             String
-  with_contract    String
-  member           Members @relation("MemberInteractions", fields: [account, account_contract], references: [account, contract])
-  with_member      Members @relation("WithMemberInteractions", fields: [with, with_contract], references: [account, contract])
+  account     String
+  with        String
+  member      Members @relation("MemberInteractions", fields: [account], references: [account_contract])
+  with_member Members @relation("WithMemberInteractions", fields: [with], references: [account_contract])
 
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime @default(now())
 
   @@map("a_interactions")
 }
