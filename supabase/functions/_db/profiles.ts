@@ -8,6 +8,10 @@ export interface ProfileWithTokenId extends Profile {
     token_id: string;
 }
 
+export interface ProfileWithContractAddress extends Profile {
+    contract: string;
+}
+
 const PROFILES_TABLE = "a_members";
 
 export const insertAnonymousProfile = async (
@@ -29,7 +33,6 @@ export const insertAnonymousProfile = async (
 
     const profile: Profile = formatProfileImageLinks(ipfsUrl, {
         account,
-        contract, // FIXME: add contract attribute to type Profile in SDK
         username: "anonymous",
         name: "Anonymous",
         description: "This user does not have a profile",
@@ -37,17 +40,29 @@ export const insertAnonymousProfile = async (
         image_medium: defaultProfileImageIpfsHash,
         image_small: defaultProfileImageIpfsHash,
     });
-    return client.from(PROFILES_TABLE).insert(profile);
+
+    const profileWithContractAddress: ProfileWithContractAddress = {
+        ...profile,
+        contract,
+    };
+
+    return client.from(PROFILES_TABLE).insert(profileWithContractAddress);
 };
 
 export const upsertProfile = async (
     client: SupabaseClient,
     profile: ProfileWithTokenId,
+    contract: string,
 ): Promise<PostgrestSingleResponse<null>> => {
+    const profileWithContractAddress: ProfileWithContractAddress = {
+        ...profile,
+        contract,
+    };
+    
     return client
         .from(PROFILES_TABLE)
-        .upsert(profile, {
-            onConflict: "account",
+        .upsert(profileWithContractAddress, {
+            onConflict: "account,contract",
         });
 };
 

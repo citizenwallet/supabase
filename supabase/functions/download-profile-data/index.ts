@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
     const result = await upsertProfile(
         supabaseClient,
         profile,
+        community.community.profile.address,
     );
 
     console.log(result);

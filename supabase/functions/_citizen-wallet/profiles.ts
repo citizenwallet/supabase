@@ -29,7 +29,11 @@ export const ensureProfileExists = async (
         );
 
         if (profile) {
-            await upsertProfile(client, profile);
+            await upsertProfile(
+                client,
+                profile,
+                config.community.profile.address,
+            );
         } else {
             // There is none, let's create an anonymous profile in the database
             await insertAnonymousProfile(
