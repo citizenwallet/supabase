@@ -7,12 +7,13 @@ import type { LogStatus } from "npm:@citizenwallet/sdk";
 export interface Transaction {
     id: string;
     hash: string;
-    created_at: string;
-    updated_at: string;
-    from: string;
-    to: string;
+    from_member_id: string;
+    to_member_id: string;
+    token_contract: string;
     value: string;
     status: LogStatus;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface TransactionWithDescription {
