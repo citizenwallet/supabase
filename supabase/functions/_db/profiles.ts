@@ -8,16 +8,23 @@ export interface ProfileWithTokenId extends Profile {
     token_id: string;
 }
 
-export interface ProfileWithContractAddress extends Profile {
-    contract: string;
+export interface ProfileWithProfileContractAddress extends Profile {
+    profile_contract: string;
 }
 
 const PROFILES_TABLE = "a_members";
 
+export const createMemberId = (
+    account: string,
+    profile_contract: string,
+): string => {
+    return `${account}:${profile_contract}`;
+};
+
 export const insertAnonymousProfile = async (
     client: SupabaseClient,
     account: string,
-    contract: string,
+    profile_contract: string,
 ): Promise<PostgrestSingleResponse<null>> => {
     const defaultProfileImageIpfsHash = Deno.env.get(
         "DEFAULT_PROFILE_IMAGE_IPFS_HASH",
@@ -41,37 +48,51 @@ export const insertAnonymousProfile = async (
         image_small: defaultProfileImageIpfsHash,
     });
 
-    const profileWithContractAddress: ProfileWithContractAddress = {
-        ...profile,
-        contract,
-    };
+    const profileWithProfileContractAddress: ProfileWithProfileContractAddress =
+        {
+            ...profile,
+            profile_contract,
+        };
 
-    return client.from(PROFILES_TABLE).insert(profileWithContractAddress);
+    return client.from(PROFILES_TABLE).insert(
+        profileWithProfileContractAddress,
+    );
 };
 
 export const upsertProfile = async (
     client: SupabaseClient,
     profile: ProfileWithTokenId,
-    contract: string,
+    profile_contract: string,
 ): Promise<PostgrestSingleResponse<null>> => {
-    const profileWithContractAddress: ProfileWithContractAddress = {
-        ...profile,
-        contract,
-    };
-    
     return client
         .from(PROFILES_TABLE)
-        .upsert(profileWithContractAddress, {
-            onConflict: "account,contract",
-        });
+        .upsert(
+            {
+                id: createMemberId(profile.account, profile_contract),
+                account: profile.account,
+                profile_contract,
+                username: profile.username,
+                name: profile.name,
+                description: profile.description,
+                image: profile.image,
+                image_medium: profile.image_medium,
+                image_small: profile.image_small,
+                token_id: profile.token_id,
+            },
+            {
+                onConflict: "id",
+            },
+        );
 };
 
 export const getProfile = async (
     client: SupabaseClient,
     account: string,
-    contract: string,
+    profile_contract: string,
 ): Promise<PostgrestSingleResponse<Profile | null>> => {
-    return client.from(PROFILES_TABLE).select().ilike("account", account)
-        .ilike("contract", contract)
+    const memberId = createMemberId(account, profile_contract);
+    return client.from(PROFILES_TABLE)
+        .select()
+        .eq("id", memberId)
         .maybeSingle();
 };
