@@ -17,6 +17,7 @@ export const ensureProfileExists = async (
     const { data, error } = await getProfile(
         client,
         address,
+        config.community.profile.address,
     );
 
     if (error || !data) {

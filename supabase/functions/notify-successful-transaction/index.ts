@@ -114,6 +114,7 @@ Deno.serve(async (req) => {
   const { data: profileData, error: profileError } = await getProfile(
     supabaseClient,
     erc20TransferData.from,
+    community.community.profile.address,
   );
 
   if (profileError || !profileData) {
