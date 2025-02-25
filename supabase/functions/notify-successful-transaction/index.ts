@@ -7,7 +7,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import { sendNotification } from "../_firebase/index.ts";
 import {
-  communityConfig,
   createERC20TransferNotification,
   type ERC20TransferData,
   getCommunityConfigsFromUrl,
@@ -16,6 +15,7 @@ import type { Profile } from "npm:@citizenwallet/sdk";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { getTokensForAddress } from "../_db/tokens.ts";
 import { getProfile } from "../_db/profiles.ts";
+import { tokenTransferEventTopic } from "npm:@citizenwallet/sdk";
 
 /**
  * Example record:
@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
   }
 
   const { dest, status, data } = record;
+  const erc20TransferData = data as ERC20TransferData;
 
   if (!dest || typeof dest !== "string") {
     return new Response(
@@ -55,9 +56,13 @@ Deno.serve(async (req) => {
       { status: 400 },
     );
   }
+
+  if (erc20TransferData.topic !== tokenTransferEventTopic) {
+    return new Response("Not ERC20 transfer, skip", { status: 200 });
+  }
+
   const tokenContract = dest.toLowerCase();
 
-  const community = communityConfig();
   const communityConfigs = await getCommunityConfigsFromUrl();
 
   if (communityConfigs.length === 0) {
@@ -91,8 +96,6 @@ Deno.serve(async (req) => {
     return new Response("CHAIN_ID is required", { status: 500 });
   }
 
-  const erc20TransferData = data as ERC20TransferData;
-
   // Fetch tokens for the destination address (contract interacted with)
   const { data: tokens, error } = await getTokensForAddress(
     supabaseClient,
@@ -110,47 +113,49 @@ Deno.serve(async (req) => {
     return new Response("No tokens found for the account", { status: 200 });
   }
 
-  let profile: Profile | undefined;
-  const { data: profileData, error: profileError } = await getProfile(
-    supabaseClient,
-    erc20TransferData.from,
-    community.community.profile.address,
-  );
+  for (const community of communitiesWithDest) {
+    let profile: Profile | undefined;
+    const { data: profileData, error: profileError } = await getProfile(
+      supabaseClient,
+      erc20TransferData.from,
+      community.community.profile.address,
+    );
 
-  if (profileError || !profileData) {
-    console.error("Error fetching profile:", profileError);
-  } else {
-    profile = profileData;
-  }
+    if (profileError || !profileData) {
+      console.error("Error fetching profile:", profileError);
+    } else {
+      profile = profileData;
+    }
 
-  const notification = createERC20TransferNotification(
-    community,
-    erc20TransferData,
-    profile,
-  );
+    const notification = createERC20TransferNotification(
+      community,
+      erc20TransferData,
+      profile,
+    );
 
-  // Prepare the notification message
-  const message = {
-    tokens: tokens.map((t) => t.token),
-    notification,
-    android: {
-      priority: "high" as "high", // Ensure notifications are always sent with high priority
-    },
-    apns: {
-      payload: {
-        aps: {
-          sound: "default", // Ensure notifications trigger a sound on iOS
+    const message = {
+      tokens: tokens.map((t) => t.token),
+      notification,
+      android: {
+        priority: "high" as "high", // Ensure notifications are always sent with high priority
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default", // Ensure notifications trigger a sound on iOS
+          },
         },
       },
-    },
-  };
+    };
 
-  // Send the notification
-  const failedTokens = await sendNotification(message);
+    const failedTokens = await sendNotification(message);
 
-  // Optionally, you can handle failed tokens here
-  if (failedTokens.length > 0) {
-    console.warn("Failed to send notifications to some tokens:", failedTokens);
+    if (failedTokens.length > 0) {
+      console.warn(
+        "Failed to send notifications to some tokens:",
+        failedTokens,
+      );
+    }
   }
 
   return new Response("notification sent", { status: 200 });

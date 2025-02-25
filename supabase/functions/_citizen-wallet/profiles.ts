@@ -23,12 +23,17 @@ export const ensureProfileExists = async (
     if (error || !data) {
         // Check the smart contract for a profile
         const profile = await getProfileFromAddress(
+            config.ipfs.url,
             config,
             address,
         );
 
         if (profile) {
-            await upsertProfile(client, profile);
+            await upsertProfile(
+                client,
+                profile,
+                config.community.profile.address,
+            );
         } else {
             // There is none, let's create an anonymous profile in the database
             await insertAnonymousProfile(
