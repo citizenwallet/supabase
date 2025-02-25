@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run --watch main.ts",
+    "migrate:transfers": "deno run --allow-net --allow-env --allow-read supabase/migrations/transfers.ts"
   },
   "nodeModulesDir": "auto",
   "imports": {
