@@ -6,16 +6,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import {
-  communityConfig,
-  getCommunityConfigsFromUrl,
   type ERC20TransferData,
   formatERC20TransactionValue,
+  getCommunityConfigsFromUrl,
 } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { type Transaction, upsertTransaction } from "../_db/transactions.ts";
 import { upsertInteraction } from "../_db/interactions.ts";
 import { ensureProfileExists } from "../_citizen-wallet/profiles.ts";
-
+import { tokenTransferEventTopic } from "npm:@citizenwallet/sdk";
+import { createMemberId } from "../_db/profiles.ts";
 
 /**
  * Example record:
@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
     status,
     data,
   } = record;
+  const erc20TransferData = data as ERC20TransferData;
 
   if (!dest || typeof dest !== "string") {
     return new Response(
@@ -63,17 +64,20 @@ Deno.serve(async (req) => {
       { status: 400 },
     );
   }
+
+  if (erc20TransferData.topic !== tokenTransferEventTopic) {
+    return new Response("Not ERC20 transfer, skip", { status: 200 });
+  }
+
   const tokenContract = dest.toLowerCase();
 
-
-  const community = communityConfig();
   const communityConfigs = await getCommunityConfigsFromUrl();
 
-    if (communityConfigs.length === 0) {
+  if (communityConfigs.length === 0) {
     return new Response("No community configs found", { status: 400 });
-    }
-  
-    const communitiesWithDest = communityConfigs.filter((config) =>
+  }
+
+  const communitiesWithDest = communityConfigs.filter((config) =>
     config.community.primary_token.address.toLowerCase() === tokenContract
   );
 
@@ -89,26 +93,34 @@ Deno.serve(async (req) => {
   // Initialize Supabase client
   const supabaseClient = getServiceRoleClient();
 
-  const erc20TransferData = data as ERC20TransferData;
+  for (const community of communitiesWithDest) {
+    await ensureProfileExists(
+      supabaseClient,
+      community,
+      erc20TransferData.from,
+    );
+    await ensureProfileExists(supabaseClient, community, erc20TransferData.to);
+  }
 
-  await ensureProfileExists(supabaseClient, community, erc20TransferData.from);
-  await ensureProfileExists(supabaseClient, community, erc20TransferData.to);
+  const firstCommunity = communitiesWithDest[0];
 
   const formattedValue = formatERC20TransactionValue(
-    community,
+    firstCommunity,
     erc20TransferData.value,
   );
 
-  // insert transaction into db
+  const profileContract = firstCommunity.community.profile.address;
+
   const transaction: Transaction = {
     id: hash,
     hash: tx_hash,
-    created_at,
-    updated_at,
-    from: erc20TransferData.from,
-    to: erc20TransferData.to,
+    from_member_id: createMemberId(erc20TransferData.from, profileContract),
+    to_member_id: createMemberId(erc20TransferData.to, profileContract),
+    token_contract: tokenContract,
     value: formattedValue,
     status: status,
+    created_at,
+    updated_at,
   };
 
   const { error } = await upsertTransaction(supabaseClient, transaction);
@@ -116,7 +128,6 @@ Deno.serve(async (req) => {
   if (error) {
     console.error("Error inserting transaction:", error);
   }
-
 
   await upsertInteraction(
     supabaseClient,

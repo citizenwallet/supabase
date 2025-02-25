@@ -5,7 +5,10 @@ const INTERACTIONS_TABLE = "a_interactions";
 
 export const upsertInteraction = async (
     client: SupabaseClient,
-    transaction: Pick<Transaction, "id" | "from" | "to">,
+    transaction: Pick<
+        Transaction,
+        "id" | "from_member_id" | "to_member_id"
+    >,
 ) => {
     const timestamp = new Date().toISOString();
 
@@ -14,15 +17,16 @@ export const upsertInteraction = async (
         .from(INTERACTIONS_TABLE)
         .upsert(
             {
-                transaction_id: transaction.id,
-                account: transaction.from,
-                with: transaction.to,
+                id: crypto.randomUUID(),
+                transfer_id: transaction.id,
+                first_person_member_id: transaction.from_member_id,
+                second_person_member_id: transaction.to_member_id,
+                new_interaction: true,
                 updated_at: timestamp,
                 created_at: timestamp,
-                new_interaction: true,
             },
             {
-                onConflict: "account,with",
+                onConflict: "transfer_id,first_person_member_id,second_person_member_id",
                 ignoreDuplicates: false,
             },
         )
@@ -33,14 +37,15 @@ export const upsertInteraction = async (
     await client
         .from(INTERACTIONS_TABLE)
         .upsert({
-            transaction_id: transaction.id,
-            account: transaction.to,
-            with: transaction.from,
+            id: crypto.randomUUID(),
+            transfer_id: transaction.id,
+            first_person_member_id: transaction.to_member_id,
+            second_person_member_id: transaction.from_member_id,
+            new_interaction: true,
             updated_at: timestamp,
             created_at: timestamp,
-            new_interaction: true,
         }, {
-            onConflict: "account,with",
+            onConflict: "transfer_id,first_person_member_id,second_person_member_id",
             ignoreDuplicates: false,
         })
         .select()

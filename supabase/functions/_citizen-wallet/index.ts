@@ -18,6 +18,7 @@ export interface ERC20TransferData {
     from: string;
     to: string;
     value: string;
+    topic: string;
 }
 
 export interface ERC20TransferExtraData {
@@ -53,7 +54,7 @@ export const getCommunityConfigsFromUrl = async (): Promise<
         return communitiesJson.map((community: any) =>
             new CommunityConfig(community)
         ).filter(
-            (community: CommunityConfig) => !community.config.community.hidden, // FIXME: fix type in SDK
+            (community: CommunityConfig) => !community.config.community.hidden,
         );
     } catch (error) {
         console.error("Error fetching communities:", error);
