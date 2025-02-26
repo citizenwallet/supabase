@@ -1,12 +1,16 @@
 import { getServiceRoleClient } from "../functions/_db/index.ts";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import type { CommunityConfig } from "jsr:@citizenwallet/sdk";
+import {
+    type CommunityConfig,
+    tokenTransferEventTopic,
+} from "npm:@citizenwallet/sdk";
 import {
     type Transaction,
     type TransactionWithDescription,
     upsertTransaction,
     upsertTransactionWithDescription,
 } from "../functions/_db/transactions.ts";
+import { upsertInteraction } from "../functions/_db/interactions.ts";
 
 import { createMemberId } from "../functions/_db/profiles.ts";
 
@@ -57,6 +61,15 @@ const processTransactions = async (
 
     for (const log of logs) {
         const erc20TransferData = log.data as ERC20TransferData;
+
+        if (erc20TransferData.topic !== tokenTransferEventTopic) {
+            console.log(
+                "Skipping non-ERC20 transfer",
+                JSON.stringify(log, null, 2),
+            );
+            continue;
+        }
+
         let erc20TransferExtraData: ERC20TransferExtraData = {
             description: "",
         };
@@ -110,6 +123,7 @@ const processTransactions = async (
             supabaseClient,
             transactionWithDescription,
         );
+        await upsertInteraction(supabaseClient, transaction);
     }
 
      if (logs.length >= limit) {
@@ -137,17 +151,42 @@ const main = async () => {
         tokenContract,
     );
 
+    if (total === 0) {
+        console.error("No logs found for chainId and tokenContract");
+        Deno.exit(1);
+    }
+
     console.log(`Total logs: ${total}`);
 
     const communityConfigs = await getCommunityConfigsFromUrl();
 
     if (communityConfigs.length === 0) {
-        return new Response("No community configs found", { status: 400 });
+        console.error("No community configs found");
+        Deno.exit(1);
     }
 
     const communitiesWithDest = communityConfigs.filter((config) =>
         config.community.primary_token.address.toLowerCase() ===
             tokenContract.toLowerCase()
+    );
+
+    if (communitiesWithDest.length === 0) {
+        console.error("No communities with token contract found");
+        Deno.exit(1);
+    }
+
+    console.log(
+        `Found ${communitiesWithDest.length} communities with destination ${tokenContract}`,
+    );
+    console.log(`${communitiesWithDest.map((c) => c.community.name)}`);
+
+    await processTransactions(
+        supabaseClient,
+        communitiesWithDest,
+        chainId,
+        tokenContract,
+        1,
+        0,
     );
 };
 
