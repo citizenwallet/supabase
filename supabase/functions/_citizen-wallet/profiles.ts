@@ -23,7 +23,7 @@ export const ensureProfileExists = async (
     if (error || !data) {
         // Check the smart contract for a profile
         const profile = await getProfileFromAddress(
-            config.ipfs.url,
+            config.ipfs.url.replace(/^https?:\/\//, ''),
             config,
             address,
         );

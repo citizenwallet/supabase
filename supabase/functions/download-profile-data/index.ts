@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
         const metadataUpdateData = data as MetadataUpdateData;
 
         const profile = await getProfileFromId(
-            community.ipfs.url,
+            community.ipfs.url.replace(/^https?:\/\//, ''),
             community,
             metadataUpdateData._tokenId,
         );
