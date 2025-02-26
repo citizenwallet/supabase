@@ -141,3 +141,61 @@ model t_sponsors_100 {
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @default(now()) @db.Timestamp(6)
 }
+
+model Members {
+  id               String   @id // ${account}:${profile_contract}
+  account          String
+  profile_contract String // primary profile contract address
+  username         String   @default("anonymous")
+  name             String   @default("Anonymous")
+  description      String   @default("this user does not have a profile")
+  image            String   @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  image_medium     String   @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  image_small      String   @default("https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh")
+  token_id         String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now())
+
+  sent_transfers                Transfers[]    @relation("FromAccount")
+  received_transfers            Transfers[]    @relation("ToAccount")
+  interactions_as_first_person  Interactions[] @relation("FirstPersonInteractions")
+  interactions_as_second_person Interactions[] @relation("SecondPersonInteractions")
+
+  @@map("a_members")
+}
+
+model Transfers {
+  id             String   @id
+  hash           String
+  from_member_id String
+  to_member_id   String
+  token_contract String // primary token contract address
+  value          String   @default("0")
+  description    String   @default("")
+  status         String   @default("pending")
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now())
+
+  from_member  Members        @relation("FromAccount", fields: [from_member_id], references: [id], onDelete: Cascade)
+  to_member    Members        @relation("ToAccount", fields: [to_member_id], references: [id], onDelete: Cascade)
+  interactions Interactions[]
+
+  @@map("a_transfers")
+}
+
+model Interactions {
+  id                      String   @id @default(uuid())
+  transfer_id             String
+  first_person_member_id  String
+  second_person_member_id String
+  new_interaction         Boolean  @default(false)
+  created_at              DateTime @default(now())
+  updated_at              DateTime @default(now())
+
+  transfer             Transfers @relation(fields: [transfer_id], references: [id], onDelete: Cascade)
+  first_person_member  Members   @relation("FirstPersonInteractions", fields: [first_person_member_id], references: [id], onDelete: Cascade)
+  second_person_member Members   @relation("SecondPersonInteractions", fields: [second_person_member_id], references: [id], onDelete: Cascade)
+
+ @@unique([transfer_id, first_person_member_id, second_person_member_id])
+  @@map("a_interactions")
+}
