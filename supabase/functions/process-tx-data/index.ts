@@ -16,6 +16,18 @@ import {
 } from "../_db/transactions.ts";
 import { getLogByHash } from "../_db/logs.ts";
 
+/**
+ * Example record format:
+ * {
+ *   "data": {
+ *     "description": "Test"
+ *   },
+ *   "hash": "0xd7f2946b1cd995324f17b5956f9d1f3b4e3e9c9429b56d2f9230788546edaad3",
+ *   "created_at": "2025-03-05T16:07:18.771495",
+ *   "updated_at": "2025-03-05T16:07:18.771495"
+ * }
+ */
+
 Deno.serve(async (req) => {
   const { record } = await req.json();
 
@@ -43,15 +55,6 @@ Deno.serve(async (req) => {
     id: hash,
     description: erc20TransferExtraData.description || "",
   };
-
-  const community = communityConfig();
-
-  // attempt to attach description to order if it exists
-  const log = await getLogByHash(
-    supabaseClient,
-    community.primaryToken.chain_id,
-    hash,
-  );
 
   const { error } = await upsertTransactionWithDescription(
     supabaseClient,
