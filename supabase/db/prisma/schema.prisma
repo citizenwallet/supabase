@@ -105,17 +105,17 @@ model Members {
 model Transfers {
   id             String   @id
   hash           String
-  from_member_id String
-  to_member_id   String
-  token_contract String // primary token contract address
+  from_member_id String?
+  to_member_id   String?
+  token_contract String? // primary token contract address
   value          String   @default("0")
   description    String   @default("")
   status         String   @default("pending")
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
-  from_member  Members        @relation("FromAccount", fields: [from_member_id], references: [id], onDelete: Cascade)
-  to_member    Members        @relation("ToAccount", fields: [to_member_id], references: [id], onDelete: Cascade)
+  from_member  Members?        @relation("FromAccount", fields: [from_member_id], references: [id], onDelete: Cascade)
+  to_member    Members?        @relation("ToAccount", fields: [to_member_id], references: [id], onDelete: Cascade)
   interactions Interactions[]
 
   @@map("a_transfers")
