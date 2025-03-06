@@ -20,9 +20,9 @@ CREATE TABLE "a_members" (
 CREATE TABLE "a_transfers" (
     "id" TEXT NOT NULL,
     "hash" TEXT NOT NULL,
-    "from_member_id" TEXT NOT NULL,
-    "to_member_id" TEXT NOT NULL,
-    "token_contract" TEXT NOT NULL,
+    "from_member_id" TEXT,
+    "to_member_id" TEXT,
+    "token_contract" TEXT,
     "value" TEXT NOT NULL DEFAULT '0',
     "description" TEXT NOT NULL DEFAULT '',
     "status" TEXT NOT NULL DEFAULT 'pending',
