@@ -1,3 +1,9 @@
 node_modules
 # Keep environment variables out of version control
 .env
+
+# Keep the database dump out of version control
+gnosis_engine_schema.sql
+
+# Keep the database dump out of version control
+gnosis_engine_data.sql
