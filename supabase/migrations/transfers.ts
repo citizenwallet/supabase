@@ -14,7 +14,7 @@ import { upsertInteraction } from "../functions/_db/interactions.ts";
 
 import { createMemberId } from "../functions/_db/profiles.ts";
 
-import { readLogs, totalLogs } from "../functions/_db/logs.ts";
+import { readLogsWithData, totalLogs } from "../functions/_db/logs.ts";
 import "https://deno.land/std@0.214.0/dotenv/load.ts";
 import {
     type ERC20TransferData,
@@ -39,27 +39,35 @@ const processTransactions = async (
     chainId: string,
     tokenContract: string,
     limit: number = 100,
-    offset: number = 0,
 ) => {
-    console.log(
-        `Processing ${limit} transactions from ${offset} until ${
-            offset + limit - 1
-        }...`,
-    );
 
-    const logs = await readLogs(
+    let offset = 0;
+
+    while (true) {
+          console.log(
+            `Processing ${limit} transactions from ${offset}...`,
+        );
+
+            const logs = await readLogsWithData(
         supabaseClient,
         chainId,
         tokenContract,
         limit,
         offset,
-    );
+            );
+        
+        console.log(`Found ${logs.length} logs`);
 
-    console.log(`Found ${logs.length} logs`);
+           if (logs.length === 0) {
+            break;
+           }
 
-    const oneCommunity = communities[0];
+           const oneCommunity = communities[0];
 
-    for (const log of logs) {
+          for (const log of logs) {
+
+
+            
         const erc20TransferData = log.data as ERC20TransferData;
 
         if (erc20TransferData.topic !== tokenTransferEventTopic) {
@@ -126,16 +134,27 @@ const processTransactions = async (
         await upsertInteraction(supabaseClient, transaction);
     }
 
-     if (logs.length >= limit) {
-        await processTransactions(
-            supabaseClient,
-            communities,
-            chainId,
-            tokenContract,
-            limit,
-            offset + limit,
-        );
+    if (logs.length < limit) {
+        console.log(`No more logs to process`);
+        break;
+        }
+
+         offset += logs.length;
+
     }
+
+
+  
+
+
+
+    
+
+ 
+
+  
+
+  
 };
 
 const main = async () => {
@@ -185,8 +204,7 @@ const main = async () => {
         communitiesWithDest,
         chainId,
         tokenContract,
-        1,
-        0,
+        100,
     );
 };
 
