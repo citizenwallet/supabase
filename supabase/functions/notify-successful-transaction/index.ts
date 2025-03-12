@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
   }
 
   const communitiesWithDest = communityConfigs.filter((config) =>
-    config.community.primary_token.address.toLowerCase() === tokenContract && config.primaryToken.chain_id === parseInt(chainId ?? "0")
+    config.community.primary_token.address.toLowerCase() === tokenContract.toLowerCase() && config.primaryToken.chain_id === parseInt(chainId ?? "0")
   );
 
   if (communitiesWithDest.length === 0) {
