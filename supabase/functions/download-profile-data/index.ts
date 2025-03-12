@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     }
 
     const communitiesWithDest = communityConfigs.filter((config) =>
-        config.community.profile.address.toLowerCase() === profileContract
+        config.community.profile.address.toLowerCase() === profileContract.toLowerCase()
     );
 
     if (communitiesWithDest.length === 0) {
