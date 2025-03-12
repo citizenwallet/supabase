@@ -38,6 +38,8 @@ import { tokenTransferEventTopic } from "npm:@citizenwallet/sdk";
  * }
  */
 
+ const chainId = Deno.env.get("CHAIN_ID");
+
 Deno.serve(async (req) => {
   const { record } = await req.json();
 
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
   }
 
   const communitiesWithDest = communityConfigs.filter((config) =>
-    config.community.primary_token.address.toLowerCase() === tokenContract
+    config.community.primary_token.address.toLowerCase() === tokenContract && config.primaryToken.chain_id === parseInt(chainId ?? "0")
   );
 
   if (communitiesWithDest.length === 0) {
