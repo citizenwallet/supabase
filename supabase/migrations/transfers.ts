@@ -184,9 +184,9 @@ const main = async () => {
         Deno.exit(1);
     }
 
-    const communitiesWithDest = communityConfigs.filter((config) =>
+   const communitiesWithDest = communityConfigs.filter((config) =>
         config.community.primary_token.address.toLowerCase() ===
-            tokenContract.toLowerCase()
+            tokenContract.toLowerCase() && config.primaryToken.chain_id === parseInt(chainId)
     );
 
     if (communitiesWithDest.length === 0) {
