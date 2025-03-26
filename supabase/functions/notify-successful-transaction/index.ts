@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     return new Response("Not ERC20 transfer, skip", { status: 200 });
   }
 
-  const tokenContract = dest.toLowerCase();
+  const tokenContract = dest;
 
   const communityConfigs = await getCommunityConfigsFromUrl();
 
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
   }
 
   const communitiesWithDest = communityConfigs.filter((config) =>
-    config.community.primary_token.address.toLowerCase() === tokenContract.toLowerCase() && config.primaryToken.chain_id === parseInt(chainId ?? "0")
+    config.community.primary_token.address === tokenContract && config.primaryToken.chain_id === parseInt(chainId ?? "0")
   );
 
   if (communitiesWithDest.length === 0) {
@@ -93,7 +93,6 @@ Deno.serve(async (req) => {
   // Initialize Supabase client
   const supabaseClient = getServiceRoleClient();
 
-  const chainId = Deno.env.get("CHAIN_ID");
   if (!chainId) {
     return new Response("CHAIN_ID is required", { status: 500 });
   }
