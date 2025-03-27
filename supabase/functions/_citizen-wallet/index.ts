@@ -21,6 +21,15 @@ export interface ERC20TransferData {
     topic: string;
 }
 
+export interface ERC1152TransferData {
+    id: string;
+    to: string;
+    from: string;
+    topic: string;
+    amount: string;
+    operator: string;
+}
+
 export interface ERC20TransferExtraData {
     description: string;
 }
@@ -72,13 +81,21 @@ export const formatERC20TransactionValue = (
 
 export const createERC20TransferNotification = (
     config: CommunityConfig,
-    data: ERC20TransferData,
+    data: ERC20TransferData | ERC1152TransferData,
     profile?: Profile,
 ): Notification => {
     const community = config.community;
     const token = config.primaryToken;
 
-    const value = formatUnits(data.value, token.decimals);
+    let value: string;
+
+    if ("value" in data) {
+        value = formatUnits(data.value, token.decimals);
+    } else if ("amount" in data) {
+        value = formatUnits(data.amount, token.decimals);
+    } else {
+        value = ''
+    }
 
     if (profile) {
         return {
