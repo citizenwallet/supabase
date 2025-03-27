@@ -34,6 +34,10 @@ export interface ERC20TransferExtraData {
     description: string;
 }
 
+export interface ERC1152TransferExtraData {
+    description: string;
+}
+
 export interface MetadataUpdateData {
     _tokenId: string;
 }

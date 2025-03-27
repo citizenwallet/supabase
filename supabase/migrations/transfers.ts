@@ -3,6 +3,7 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import {
     type CommunityConfig,
     tokenTransferEventTopic,
+    tokenTransferSingleEventTopic,
 } from "npm:@citizenwallet/sdk";
 import {
     type Transaction,
@@ -19,6 +20,8 @@ import "https://deno.land/std@0.214.0/dotenv/load.ts";
 import {
     type ERC20TransferData,
     type ERC20TransferExtraData,
+    type ERC1152TransferData,
+    type ERC1152TransferExtraData,
     formatERC20TransactionValue,
     getCommunityConfigsFromUrl,
 } from "../functions/_citizen-wallet/index.ts";
@@ -68,37 +71,53 @@ const processTransactions = async (
 
 
             
-        const erc20TransferData = log.data as ERC20TransferData;
+           let transferData: ERC20TransferData | ERC1152TransferData ;
+  if (log.dest === '0x56744910f7dEcD48c1a7FA61B4C317b15E99F156') {
+    transferData = log.data as ERC1152TransferData;
+  } else {
+    transferData = log.data as ERC20TransferData;
+  }
 
-        if (erc20TransferData.topic !== tokenTransferEventTopic) {
-            console.log(
+          const skipTransfer = transferData.topic !== tokenTransferEventTopic || transferData.topic !== tokenTransferSingleEventTopic;
+
+  if (skipTransfer) {
+     console.log(
                 "Skipping non-ERC20 transfer",
                 JSON.stringify(log, null, 2),
             );
             continue;
-        }
+  }
 
-        let erc20TransferExtraData: ERC20TransferExtraData = {
-            description: "",
-        };
+         let transferExtraData: ERC20TransferExtraData | ERC1152TransferExtraData = { description: "" };
         if (log.extra_data) {
-            erc20TransferExtraData = log.extra_data as ERC20TransferExtraData;
+            transferExtraData = log.extra_data as ERC20TransferExtraData | ERC1152TransferExtraData;
         }
+              
+            
+  let value: string;
+
+  if ("value" in transferData) {
+    value = transferData.value;
+  } else if ("amount" in transferData) {
+    value = transferData.amount;
+  } else {
+    value = '';
+  }  
 
         const formattedValue = formatERC20TransactionValue(
             oneCommunity,
-            erc20TransferData.value,
+            value,
         );
 
         const transaction: Transaction = {
             id: log.hash,
             hash: log.tx_hash,
             from_member_id: createMemberId(
-                erc20TransferData.from,
+                transferData.from,
                 oneCommunity.community.profile.address,
             ),
             to_member_id: createMemberId(
-                erc20TransferData.to,
+                transferData.to,
                 oneCommunity.community.profile.address,
             ),
             token_contract: tokenContract,
@@ -110,19 +129,19 @@ const processTransactions = async (
 
         const transactionWithDescription: TransactionWithDescription = {
             id: log.hash,
-            description: erc20TransferExtraData.description || "",
+            description: transferExtraData.description || "",
         };
 
         for (const community of communities) {
             await ensureProfileExists(
                 supabaseClient,
                 community,
-                erc20TransferData.from,
+                transferData.from,
             );
             await ensureProfileExists(
                 supabaseClient,
                 community,
-                erc20TransferData.to,
+                transferData.to,
             );
         }
 
