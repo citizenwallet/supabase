@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  const skipTransfer = transferData.topic !== tokenTransferEventTopic || transferData.topic !== tokenTransferSingleEventTopic;
+  const skipTransfer = transferData.topic !== tokenTransferEventTopic && transferData.topic !== tokenTransferSingleEventTopic;
 
   if (skipTransfer) {
     return new Response("Not ERC20 or ERC1152 transfer, skip", { status: 200 });

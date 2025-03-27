@@ -78,7 +78,7 @@ const processTransactions = async (
     transferData = log.data as ERC20TransferData;
   }
 
-          const skipTransfer = transferData.topic !== tokenTransferEventTopic || transferData.topic !== tokenTransferSingleEventTopic;
+          const skipTransfer = transferData.topic !== tokenTransferEventTopic && transferData.topic !== tokenTransferSingleEventTopic;
 
   if (skipTransfer) {
      console.log(
