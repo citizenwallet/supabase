@@ -8,7 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {
   type ERC20TransferData,
   formatERC20TransactionValue,
-  getCommunityConfigsFromUrl,
+  getCommunityConfigs,
 } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { type Transaction, upsertTransaction } from "../_db/transactions.ts";
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
 
   const tokenContract = dest;
 
-  const communityConfigs = await getCommunityConfigsFromUrl();
+  const communityConfigs = await getCommunityConfigs();
 
   if (communityConfigs.length === 0) {
     return new Response("No community configs found", { status: 400 });
