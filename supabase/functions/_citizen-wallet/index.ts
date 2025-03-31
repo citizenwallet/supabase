@@ -1,7 +1,7 @@
-import { CommunityConfig, type Profile } from "npm:@citizenwallet/sdk";
+import { CommunityConfig, type Profile, Config } from "npm:@citizenwallet/sdk";
 import { formatUnits } from "npm:ethers";
 
-import communityJson from "./community.json" with {
+import eureGnosisCommunityJson from "./eure_gnosis_community.json" with {
     type: "json",
 };
 
@@ -29,11 +29,11 @@ export interface MetadataUpdateData {
     _tokenId: string;
 }
 
-export const communityConfig = () => {
-    return new CommunityConfig(communityJson);
+const getEureGnosisCommunityConfig = (): CommunityConfig => {
+    return new CommunityConfig(eureGnosisCommunityJson);
 };
 
-export const getCommunityConfigsFromUrl = async (): Promise<
+const getCommunityConfigsFromUrl = async (): Promise<
     CommunityConfig[]
 > => {
     if (!COMMUNITIES_CONFIG_URL) {
@@ -49,15 +49,27 @@ export const getCommunityConfigsFromUrl = async (): Promise<
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const communitiesJson = await response.json();
+        const communitiesJson = await response.json() as Config[];
 
-        return communitiesJson.map((community: any) =>
+        return communitiesJson.map((community: Config) =>
             new CommunityConfig(community)
         ).filter(
             (community: CommunityConfig) => !community.config.community.hidden,
         );
     } catch (error) {
         console.error("Error fetching communities:", error);
+        throw error;
+    }
+};
+
+export const getCommunityConfigs = async (): Promise<CommunityConfig[]> => {
+    try {
+        const eureGnosisConfig = getEureGnosisCommunityConfig();
+        const urlConfigs = await getCommunityConfigsFromUrl();
+        
+        return [eureGnosisConfig, ...urlConfigs];
+    } catch (error) {
+        console.error("Error getting community configs:", error);
         throw error;
     }
 };

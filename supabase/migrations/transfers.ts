@@ -20,7 +20,7 @@ import {
     type ERC20TransferData,
     type ERC20TransferExtraData,
     formatERC20TransactionValue,
-    getCommunityConfigsFromUrl,
+    getCommunityConfigs,
 } from "../functions/_citizen-wallet/index.ts";
 import { ensureProfileExists } from "../functions/_citizen-wallet/profiles.ts";
 
@@ -177,7 +177,7 @@ const main = async () => {
 
     console.log(`Total logs: ${total}`);
 
-    const communityConfigs = await getCommunityConfigsFromUrl();
+    const communityConfigs = await getCommunityConfigs();
 
     if (communityConfigs.length === 0) {
         console.error("No community configs found");
