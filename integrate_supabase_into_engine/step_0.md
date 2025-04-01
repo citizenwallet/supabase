@@ -78,4 +78,9 @@ docker  compose  version
 
 ## 4. psql
 
+## 5. Deno
+For edge functions
+```shell
+curl -fsSL https://deno.land/install.sh | sh
+```
 
