@@ -10,7 +10,7 @@ We will create a copy of the data and schema from `engine-db` so we can restore 
 
 > - Stop the Supabase stack if it is active. `docker compose down`
 
-> - Run the database service `ENGINE` application if it is inactive. ` docker compose up -d --build db`
+> - Run the database service `ENGINE` application if it is inactive. `docker compose up -d --build db`
 
   
 
@@ -18,7 +18,7 @@ We will connect to `engine-db` to get a copy of its data.
 
 ```bash
 
-docker exec -it db pg_dump -U <db_user> -d <db_name> --data-only > ~/data.sql
+docker exec -it db pg_dump -U <db_user> -d <db_name> --data-only > ~/engine/data.sql
 ```
 
   
@@ -184,6 +184,9 @@ docker  exec  -it  supabase-db  psql  -U  postgres
 ### Insert Data into `supabase-db`
 
 ```bash
-cat /home/cw/engine/data.sql | docker exec -i supabase-db psql -U postgres -d postgres
+# First, copy the file into the container
+docker compose cp /home/cw/engine/data.sql db:/tmp/data.sql
 
+# Then restore from within the container
+docker compose exec db psql -U postgres -d postgres -f /tmp/data.sql
 ```
