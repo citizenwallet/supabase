@@ -184,6 +184,9 @@ docker  exec  -it  supabase-db  psql  -U  postgres
 ### Insert Data into `supabase-db`
 
 ```bash
-cat /home/cw/engine/data.sql | docker exec -i supabase-db psql -U postgres -d postgres
+# First, copy the file into the container
+docker compose cp /home/cw/engine/data.sql db:/tmp/data.sql
 
+# Then restore from within the container
+docker compose exec db psql -U postgres -d postgres -f /tmp/data.sql
 ```
