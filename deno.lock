@@ -16,6 +16,7 @@
     "npm:@supabase/realtime-js@2.11.2": "2.11.2",
     "npm:@supabase/storage-js@2.7.1": "2.7.1",
     "npm:@types/node@*": "22.10.5",
+    "npm:e@*": "0.2.33",
     "npm:ethers@*": "6.13.5",
     "npm:ethers@^6.11.1": "6.13.5",
     "npm:ethers@^6.13.4": "6.13.5",
@@ -500,6 +501,9 @@
         "readable-stream",
         "stream-shift"
       ]
+    },
+    "e@0.2.33": {
+      "integrity": "sha512-anpW+L+S+xxSOg0/IdVDwcjxS6b63Cbg0EPhiUbvfr2xSQ9IB0BK+QOjj1ndn5RfnhOyM20AwTOt26xyw/BCLA=="
     },
     "ecdsa-sig-formatter@1.0.11": {
       "integrity": "sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==",

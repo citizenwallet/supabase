@@ -42,6 +42,13 @@ export interface MetadataUpdateData {
     _tokenId: string;
 }
 
+export interface RoleChangeData {
+    role: string;
+    topic: string;
+    sender: string;
+    account: string;
+}
+
 const getEureGnosisCommunityConfig = (): CommunityConfig => {
     return new CommunityConfig(eureGnosisCommunityJson);
 };
