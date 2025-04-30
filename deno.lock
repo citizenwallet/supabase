@@ -5,6 +5,7 @@
     "jsr:@std/internal@^1.0.6": "1.0.6",
     "jsr:@supabase/functions-js@*": "2.4.4",
     "jsr:@supabase/functions-js@^2.4.3": "2.4.4",
+    "jsr:@supabase/functions-js@*": "2.4.4",
     "jsr:@supabase/supabase-js@2": "2.47.10",
     "jsr:@supabase/supabase-js@^2.46.0": "2.47.10",
     "npm:@citizenwallet/sdk@*": "2.0.74_react@18.3.1",
@@ -32,6 +33,12 @@
     },
     "@std/internal@1.0.6": {
       "integrity": "9533b128f230f73bd209408bb07a4b12f8d4255ab2a4d22a1fd6d87304aca9a4"
+    },
+    "@supabase/functions-js@2.4.4": {
+      "integrity": "38456509a6e22fb116b118464cbb36357256f9048d3580632b63af91f63769f7",
+      "dependencies": [
+        "npm:openai"
+      ]
     },
     "@supabase/functions-js@2.4.4": {
       "integrity": "38456509a6e22fb116b118464cbb36357256f9048d3580632b63af91f63769f7",
