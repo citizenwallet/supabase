@@ -10,7 +10,7 @@ import {
   createERC20TransferNotification,
   type ERC20TransferData,
   type ERC1152TransferData,
-  getCommunityConfigsFromUrl,
+  getCommunityConfigs,
 } from "../_citizen-wallet/index.ts";
 import type { Profile } from "npm:@citizenwallet/sdk";
 import { tokenTransferEventTopic, tokenTransferSingleEventTopic } from "npm:@citizenwallet/sdk";
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
 
   const tokenContract = dest;
 
-  const communityConfigs = await getCommunityConfigsFromUrl();
+  const communityConfigs = await getCommunityConfigs();
 
   if (communityConfigs.length === 0) {
     return new Response("No community configs found", { status: 400 });
