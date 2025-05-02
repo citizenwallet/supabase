@@ -13,6 +13,7 @@ import {
 } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { type Transaction, upsertTransaction } from "../_db/transactions.ts";
+import { getLogDataByHash } from "../_db/logs_data.ts";
 import { upsertInteraction } from "../_db/interactions.ts";
 import { ensureProfileExists } from "../_citizen-wallet/profiles.ts";
 import { tokenTransferEventTopic, tokenTransferSingleEventTopic } from "npm:@citizenwallet/sdk";
@@ -156,6 +157,15 @@ Deno.serve(async (req) => {
 
   const profileContract = firstCommunity.community.profile.address;
 
+
+  let description = '';
+
+  const logData = await getLogDataByHash(supabaseClient, parseInt(chainId ?? "0"), hash);
+
+  if (logData) {
+    description = logData.data.description;
+  }
+
   const transaction: Transaction = {
     id: hash,
     hash: tx_hash,
@@ -163,6 +173,7 @@ Deno.serve(async (req) => {
     to_member_id: createMemberId(transferData.to, profileContract),
     token_contract: tokenContract,
     value: formattedValue,
+    description: description,
     status: status,
     created_at,
     updated_at,
