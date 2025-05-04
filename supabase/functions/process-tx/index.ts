@@ -7,18 +7,20 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import {
   type ERC20TransferData,
+  type ERC1152TransferData,
   formatERC20TransactionValue,
-  getCommunityConfigsFromUrl,
+  getCommunityConfigs,
 } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { type Transaction, upsertTransaction } from "../_db/transactions.ts";
+import { getLogDataByHash } from "../_db/logs_data.ts";
 import { upsertInteraction } from "../_db/interactions.ts";
 import { ensureProfileExists } from "../_citizen-wallet/profiles.ts";
-import { tokenTransferEventTopic } from "npm:@citizenwallet/sdk";
+import { tokenTransferEventTopic, tokenTransferSingleEventTopic } from "npm:@citizenwallet/sdk";
 import { createMemberId } from "../_db/profiles.ts";
 
 /**
- * Example record:
+ * Example record: ERC20 Transfer
  * {
  *   "data": {
  *     "to": "0x5566D6D4Df27a6fD7856b7564F81266863Ba3ee8",
@@ -27,6 +29,29 @@ import { createMemberId } from "../_db/profiles.ts";
  *     "value": "100000"
  *   },
  *   "dest": "0x5815E61eF72c9E6107b5c5A05FD121F334f7a7f1",
+ *   "hash": "0xd3587bcb15230bdc9a2cf7f81641798f47d091d0a6b8277c0993d643e027e900",
+ *   "nonce": 0,
+ *   "value": "0",
+ *   "sender": "",
+ *   "status": "success",
+ *   "tx_hash": "0x1b8f3931e81e1cf6a3215d4763de52df86deaa2215c77cc8c44381d5fe8861c8",
+ *   "created_at": "2025-02-23T14:30:35",
+ *   "updated_at": "2025-02-23T14:30:36.349932"
+ * }
+ */
+
+/**
+ * Example record: ERC1152 Transfer
+ * {
+ *   "data": {
+ *     "id": "0",
+ *     "to": "0xE8D5fc9dc2EacF6FCbB97E7F92049834643DEe44",
+ *     "from": "0x3ec9eE367660fbC5ea95Ed72E31823d2f59e291F",
+ *     "topic": "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
+ *     "amount": "1",
+ *     "operator": "0x3ec9eE367660fbC5ea95Ed72E31823d2f59e291F"
+ *   },
+ *   "dest": "0x56744910f7dEcD48c1a7FA61B4C317b15E99F156",
  *   "hash": "0xd3587bcb15230bdc9a2cf7f81641798f47d091d0a6b8277c0993d643e027e900",
  *   "nonce": 0,
  *   "value": "0",
@@ -58,7 +83,13 @@ Deno.serve(async (req) => {
     status,
     data,
   } = record;
-  const erc20TransferData = data as ERC20TransferData;
+
+    let transferData: ERC20TransferData | ERC1152TransferData ;
+  if (dest === '0x56744910f7dEcD48c1a7FA61B4C317b15E99F156') {
+    transferData = data as ERC1152TransferData;
+  } else {
+    transferData = data as ERC20TransferData;
+  }
 
   if (!dest || typeof dest !== "string") {
     return new Response(
@@ -67,13 +98,15 @@ Deno.serve(async (req) => {
     );
   }
 
-  if (erc20TransferData.topic !== tokenTransferEventTopic) {
-    return new Response("Not ERC20 transfer, skip", { status: 200 });
+   const skipTransfer = transferData.topic !== tokenTransferEventTopic && transferData.topic !== tokenTransferSingleEventTopic;
+
+  if (skipTransfer) {
+    return new Response("Not ERC20 or ERC1152 transfer, skip", { status: 200 });
   }
 
   const tokenContract = dest;
 
-  const communityConfigs = await getCommunityConfigsFromUrl();
+  const communityConfigs = await getCommunityConfigs();
 
   if (communityConfigs.length === 0) {
     return new Response("No community configs found", { status: 400 });
@@ -99,27 +132,48 @@ Deno.serve(async (req) => {
     await ensureProfileExists(
       supabaseClient,
       community,
-      erc20TransferData.from,
+      transferData.from,
     );
-    await ensureProfileExists(supabaseClient, community, erc20TransferData.to);
+    await ensureProfileExists(supabaseClient, community, transferData.to);
   }
 
   const firstCommunity = communitiesWithDest[0];
 
+
+  let value: string;
+
+  if ("value" in transferData) {
+    value = transferData.value;
+  } else if ("amount" in transferData) {
+    value = transferData.amount;
+  } else {
+    value = '';
+  }
+
   const formattedValue = formatERC20TransactionValue(
     firstCommunity,
-    erc20TransferData.value,
+    value,
   );
 
   const profileContract = firstCommunity.community.profile.address;
 
+
+  let description = '';
+
+  const logData = await getLogDataByHash(supabaseClient, parseInt(chainId ?? "0"), hash);
+
+  if (logData) {
+    description = logData.data.description;
+  }
+
   const transaction: Transaction = {
     id: hash,
     hash: tx_hash,
-    from_member_id: createMemberId(erc20TransferData.from, profileContract),
-    to_member_id: createMemberId(erc20TransferData.to, profileContract),
+    from_member_id: createMemberId(transferData.from, profileContract),
+    to_member_id: createMemberId(transferData.to, profileContract),
     token_contract: tokenContract,
     value: formattedValue,
+    description: description,
     status: status,
     created_at,
     updated_at,
