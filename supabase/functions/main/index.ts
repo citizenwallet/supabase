@@ -1,5 +1,5 @@
-import { serve } from 'https://deno.land/std@0.131.0/http/server.ts'
-import * as jose from 'https://deno.land/x/jose@v4.14.4/index.ts'
+import { serve } from "std/http";
+import * as jose from "jose";
 
 console.log('main function started - cw_supabase')
 
