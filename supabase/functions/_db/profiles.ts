@@ -2,7 +2,7 @@ import { formatProfileImageLinks, type Profile } from "npm:@citizenwallet/sdk";
 import type {
     PostgrestSingleResponse,
     SupabaseClient,
-} from "jsr:@supabase/supabase-js@2";
+} from "npm:@supabase/supabase-js@2";
 
 export interface ProfileWithTokenId extends Profile {
     token_id: string;
