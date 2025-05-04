@@ -6,8 +6,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import {
-  communityConfig,
   type ERC20TransferExtraData,
+  type ERC1152TransferExtraData,
 } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import {
@@ -16,7 +16,9 @@ import {
 } from "../_db/transactions.ts";
 import { getLogByHash } from "../_db/logs.ts";
 
-/**
+
+
+/** same for ERC1152 and ERC20
  * Example record format:
  * {
  *   "data": {
@@ -45,15 +47,15 @@ Deno.serve(async (req) => {
   // Initialize Supabase client
   const supabaseClient = getServiceRoleClient();
 
-  let erc20TransferExtraData: ERC20TransferExtraData = { description: "" };
+  let transferExtraData: ERC20TransferExtraData | ERC1152TransferExtraData = { description: "" };
   if (data) {
-    erc20TransferExtraData = data as ERC20TransferExtraData;
+    transferExtraData = data as ERC20TransferExtraData | ERC1152TransferExtraData;
   }
 
   // insert transaction into db
   const transaction: TransactionWithDescription = {
     id: hash,
-    description: erc20TransferExtraData.description || "",
+    description: transferExtraData.description || "",
   };
 
   const { error } = await upsertTransactionWithDescription(

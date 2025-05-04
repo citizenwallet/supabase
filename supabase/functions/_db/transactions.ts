@@ -11,6 +11,7 @@ export interface Transaction {
     to_member_id: string;
     token_contract: string;
     value: string;
+    description: string;
     status: LogStatus;
     created_at: string;
     updated_at: string;

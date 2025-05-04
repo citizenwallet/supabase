@@ -99,5 +99,12 @@ export const getLogByHash = async (
             "hash",
             hash,
         ).maybeSingle();
+
+    if (error) {
+        console.error("Error fetching log:", error);
+
+        return null;
+    }
+
     return data as Log | null;
 };
