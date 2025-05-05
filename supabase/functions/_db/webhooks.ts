@@ -1,0 +1,26 @@
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+
+const WEBHOOKS_TABLE = "webhooks";
+const WEBHOOK_SECRETS_TABLE = "webhook_secrets";
+
+export const getWebhook = async (
+  client: SupabaseClient,
+  event_contract: string,
+  event_topic: string
+) => {
+  return await client
+    .from(WEBHOOKS_TABLE)
+    .select("*")
+    .eq("event_contract", event_contract)
+    .eq("event_topic", event_topic);
+};
+
+export const getWebhookSecret = async (
+  client: SupabaseClient,
+  alias: string
+) => {
+  return await client
+    .from(WEBHOOK_SECRETS_TABLE)
+    .select("*")
+    .eq("alias", alias);
+};
