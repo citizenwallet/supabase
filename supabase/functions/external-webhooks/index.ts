@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.1/http/server.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
+import { getWebhook, getWebhookSecret } from "../_db/webhooks.ts";
 
 serve(async (req) => {
   const { record } = await req.json();
@@ -10,11 +11,11 @@ serve(async (req) => {
   const supabaseClient = getServiceRoleClient();
 
   // Fetch the webhook from the database
-  const { data, error } = await supabaseClient
-    .from("webhooks")
-    .select("*")
-    .eq("event_contract", record.dest)
-    .eq("event_topic", record.data.topic);
+  const { data, error } = await getWebhook(
+    supabaseClient,
+    record.dest,
+    record.data.topic
+  );
 
   if (error) {
     console.error("Error fetching community config", error);
@@ -26,14 +27,13 @@ serve(async (req) => {
     return new Response("No webhook found for event", { status: 404 });
   }
 
+  //for get the alias
   const webhook = data[0];
-
-  const webhookUrl = webhook.url;
   const alias = webhook.alias;
 
   // Fetch the webhook secret from the database
   const { data: webhookSecretData, error: webhookSecretError } =
-    await supabaseClient.from("webhook_secrets").select("*").eq("alias", alias);
+    await getWebhookSecret(supabaseClient, alias);
 
   if (webhookSecretError) {
     console.error("Error fetching webhook secret", webhookSecretError);
@@ -42,42 +42,48 @@ serve(async (req) => {
 
   if (webhookSecretData.length === 0) {
     console.error("No webhook secret found for alias", alias);
-    return new Response("No webhook secret found for alias", { status: 404 });
+    return new Response("No webhook secret found for alias", { status: 500 });
   }
 
   const webhookSecret = webhookSecretData[0];
   const webhookSecretKey = webhookSecret.secret;
 
-  // Send the webhook request with timeout and error logging
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  // Send all webhooks requests
+  for (const webhook of data) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${webhookSecretKey}`,
-      },
-      body: JSON.stringify(record),
-      signal: controller.signal,
-    });
+    try {
+      const webhookUrl = webhook.url;
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${webhookSecretKey}`,
+        },
+        body: JSON.stringify(record),
+        signal: controller.signal,
+      });
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      console.error(
-        `Webhook request failed with status ${response.status}: ${response.statusText}`
-      );
-    } else {
-      console.log("Webhook response:", await response.text());
-    }
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err.name === "AbortError") {
-      console.error("Webhook request timed out after 10 seconds");
-    } else {
-      console.error("Error sending webhook request:", err);
+      if (!response.ok) {
+        console.error(
+          `Webhook request failed with status ${response.status}: ${response.statusText}`
+        );
+        continue;
+      } else {
+        console.log("Webhook response:", await response.text());
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+
+      if (err.name === "AbortError") {
+        console.error("Webhook request timed out after 10 seconds");
+      } else {
+        console.error("Error sending webhook request:", err);
+      }
+      continue;
     }
   }
 
