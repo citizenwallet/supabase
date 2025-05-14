@@ -3,7 +3,10 @@ import { getServiceRoleClient } from "../_db/index.ts";
 import { getWebhook, getWebhookSecret } from "../_db/webhooks.ts";
 
 serve(async (req) => {
+  //get the body
   const { record } = await req.json();
+
+  //check if the record is valid
   if (!record || typeof record !== "object") {
     return new Response("Invalid record data", { status: 400 });
   }
@@ -17,42 +20,55 @@ serve(async (req) => {
     record.data.topic
   );
 
+  //check if the webhook has an error
   if (error) {
     console.error("Error getting webhooks subscriptions", error);
-    return new Response("Error getting webhooks subscriptions", { status: 500 });
+    return new Response("Error getting webhooks subscriptions", {
+      status: 500,
+    });
   }
 
+  //check if the webhook has data
   if (data.length === 0) {
-    console.error("No webhooks subscriptions found for event", record.data.topic);
-    return new Response("No webhooks subscriptions found for event", { status: 404 });
+    console.error(
+      "No webhooks subscriptions found for event",
+      record.data.topic
+    );
+    return new Response("No webhooks subscriptions found for event", {
+      status: 404,
+    });
   }
-
-  //for get the alias
-  const webhook = data[0];
-  const alias = webhook.alias;
-
-  // Fetch the webhook secret from the database
-  const { data: webhookSecretData, error: webhookSecretError } =
-    await getWebhookSecret(supabaseClient, alias);
-
-  if (webhookSecretError) {
-    console.error("Error fetching webhook secret", webhookSecretError);
-    return new Response("Error fetching webhook secret", { status: 500 });
-  }
-
-  if (webhookSecretData.length === 0) {
-    console.error("No webhook secret found for alias", alias);
-    return new Response("No webhook secret found for alias", { status: 500 });
-  }
-
-  const webhookSecret = webhookSecretData[0];
-  const webhookSecretKey = webhookSecret.secret;
 
   // Send all webhooks requests
   for (const webhook of data) {
+    //for get the alias
+    const alias = webhook.alias;
+
+    // Fetch the webhook secret from the database
+    const { data: webhookSecretData, error: webhookSecretError } =
+      await getWebhookSecret(supabaseClient, alias);
+
+    //check if the webhook secret has an error
+    if (webhookSecretError) {
+      console.error("Error fetching webhook secret", webhookSecretError);
+      return new Response("Error fetching webhook secret", { status: 500 });
+    }
+
+    //check if the webhook secret has data
+    if (webhookSecretData.length === 0) {
+      console.error("No webhook secret found for alias", alias);
+      return new Response("No webhook secret found for alias", { status: 500 });
+    }
+
+    //get the webhook secret key
+    const webhookSecretKey = webhookSecretData[0].secret;
+
+    // Create an AbortController to enable request cancellation
+    // Set a timeout to automatically abort the operation after 10 seconds
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+    //send the webhook request
     try {
       const webhookUrl = webhook.url;
       const response = await fetch(webhookUrl, {
@@ -65,14 +81,17 @@ serve(async (req) => {
         signal: controller.signal,
       });
 
+      // Clean up timeout if fetch completes
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        //log the webhook response has error,then it continue to the next webhook
         console.error(
           `Webhook request failed with status ${response.status}: ${response.statusText}`
         );
         continue;
       } else {
+        //log the webhook response
         console.log("Webhook response:", await response.text());
       }
     } catch (err) {
