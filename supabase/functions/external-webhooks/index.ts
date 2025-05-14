@@ -18,13 +18,13 @@ serve(async (req) => {
   );
 
   if (error) {
-    console.error("Error fetching community config", error);
-    return new Response("Error fetching community config", { status: 500 });
+    console.error("Error getting webhooks subscriptions", error);
+    return new Response("Error getting webhooks subscriptions", { status: 500 });
   }
 
   if (data.length === 0) {
-    console.error("No webhook found for event", record.data.topic);
-    return new Response("No webhook found for event", { status: 404 });
+    console.error("No webhooks subscriptions found for event", record.data.topic);
+    return new Response("No webhooks subscriptions found for event", { status: 404 });
   }
 
   //for get the alias
