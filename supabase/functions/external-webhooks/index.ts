@@ -51,14 +51,14 @@ serve(async (req) => {
     //check if the webhook secret has an error
     if (webhookSecretError) {
       console.error("Error fetching webhook secret", webhookSecretError);
-      return new Response("Error fetching webhook secret", { status: 500 });
+      continue;
     }
 
     //check if the webhook secret has data
-    if (webhookSecretData.length === 0) {
-      console.error("No webhook secret found for alias", alias);
-      return new Response("No webhook secret found for alias", { status: 500 });
-    }
+    if (!webhookSecretData || webhookSecretData.length === 0) {
+    console.error("No webhook secret found for alias:", alias);
+    continue;
+  }
 
     //get the webhook secret key
     const webhookSecretKey = webhookSecretData[0].secret;
@@ -86,21 +86,22 @@ serve(async (req) => {
 
       if (!response.ok) {
         //log the webhook response has error,then it continue to the next webhook
-        console.error(
-          `Webhook request failed with status ${response.status}: ${response.statusText}`
-        );
+         console.error(
+        `Webhook request to ${webhook.url} failed with status ${response.status}: ${response.statusText}`
+      );
         continue;
-      } else {
-        //log the webhook response
-        console.log("Webhook response:", await response.text());
-      }
+      } 
+
+      const responseText = await response.text();
+      console.log(`Webhook to ${webhook.url} succeeded:`, responseText);
+
     } catch (err) {
       clearTimeout(timeoutId);
 
       if (err.name === "AbortError") {
-        console.error("Webhook request timed out after 10 seconds");
+        console.error(`Webhook request to ${webhook.url} timed out`);
       } else {
-        console.error("Error sending webhook request:", err);
+         console.error(`Error sending webhook request to ${webhook.url}:`, err);
       }
       continue;
     }
