@@ -1,8 +1,7 @@
-import { serve } from "https://deno.land/std@0.177.1/http/server.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { getWebhook, getWebhookSecret } from "../_db/webhooks.ts";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   //get the body
   const { record } = await req.json();
 
@@ -17,7 +16,7 @@ serve(async (req) => {
   const { data, error } = await getWebhook(
     supabaseClient,
     record.dest,
-    record.data.topic
+    record.data.topic,
   );
 
   //check if the webhook has an error
@@ -32,7 +31,7 @@ serve(async (req) => {
   if (data.length === 0) {
     console.error(
       "No webhooks subscriptions found for event",
-      record.data.topic
+      record.data.topic,
     );
     return new Response("No webhooks subscriptions found for event", {
       status: 404,
@@ -56,9 +55,9 @@ serve(async (req) => {
 
     //check if the webhook secret has data
     if (!webhookSecretData || webhookSecretData.length === 0) {
-    console.error("No webhook secret found for alias:", alias);
-    continue;
-  }
+      console.error("No webhook secret found for alias:", alias);
+      continue;
+    }
 
     //get the webhook secret key
     const webhookSecretKey = webhookSecretData[0].secret;
@@ -86,22 +85,21 @@ serve(async (req) => {
 
       if (!response.ok) {
         //log the webhook response has error,then it continue to the next webhook
-         console.error(
-        `Webhook request to ${webhook.url} failed with status ${response.status}: ${response.statusText}`
-      );
+        console.error(
+          `Webhook request to ${webhook.url} failed with status ${response.status}: ${response.statusText}`,
+        );
         continue;
-      } 
+      }
 
       const responseText = await response.text();
       console.log(`Webhook to ${webhook.url} succeeded:`, responseText);
-
     } catch (err) {
       clearTimeout(timeoutId);
 
       if (err.name === "AbortError") {
         console.error(`Webhook request to ${webhook.url} timed out`);
       } else {
-         console.error(`Error sending webhook request to ${webhook.url}:`, err);
+        console.error(`Error sending webhook request to ${webhook.url}:`, err);
       }
       continue;
     }
