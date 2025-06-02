@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "std/http": "https://raw.githubusercontent.com/denoland/deno_std/0.131.0/http/server.ts",
+    "jose": "npm:jose@4.14.4",
+    "@supabase/supabase-js": "https://raw.githubusercontent.com/supabase/supabase-js/v2.38.0/src/index.ts",
+    "@supabase/functions-js/edge-runtime.d.ts": "https://raw.githubusercontent.com/supabase/functions-js/v2.1.5/src/edge-runtime.d.ts",
+    "@citizenwallet/sdk": "npm:@citizenwallet/sdk",
+    "ethers": "npm:ethers",
+    "firebase-admin/app": "npm:firebase-admin/app",
+    "firebase-admin/messaging": "npm:firebase-admin/messaging"
+  }
+}
