@@ -1,5 +1,5 @@
 import { tokenTransferEventTopic } from "npm:@citizenwallet/sdk";
-import { isAddress } from "npm:ethers";
+import { isAddress, ZeroAddress } from "npm:ethers";
 import { ProfileDeleteData } from "../_citizen-wallet/index.ts";
 import { getServiceRoleClient } from "../_db/index.ts";
 import { deleteProfile, getProfile } from "../_db/profiles.ts";
@@ -58,14 +58,14 @@ Deno.serve(async (req) => {
         });
     }
 
-    if (data.to != "0x0000000000000000000000000000000000000000") {
+    if (data.to != ZeroAddress) {
         return new Response("Transaction to is not valid, ignoring", {
             status: 200,
         });
     }
 
     if (
-        data.from == "0x0000000000000000000000000000000000000000" ||
+        data.from == ZeroAddress ||
         !isAddress(data.from)
     ) {
         return new Response("Transaction from is not valid, ignoring", {
