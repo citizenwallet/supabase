@@ -89,7 +89,7 @@ export const getProfile = async (
     client: SupabaseClient,
     account: string,
     profile_contract: string,
-): Promise<PostgrestSingleResponse<Profile | null>> => {
+): Promise<PostgrestSingleResponse<ProfileWithProfileContractAddress | null>> => {
     const memberId = createMemberId(account, profile_contract);
     return client.from(PROFILES_TABLE)
         .select()
