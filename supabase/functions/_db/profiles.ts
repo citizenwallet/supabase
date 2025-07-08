@@ -64,23 +64,25 @@ export const upsertProfile = async (
     profile: ProfileWithTokenId,
     profile_contract: string,
 ): Promise<PostgrestSingleResponse<null>> => {
-    return client.from(PROFILES_TABLE).upsert(
-        {
-            id: createMemberId(profile.account, profile_contract),
-            account: profile.account,
-            profile_contract,
-            username: profile.username,
-            name: profile.name,
-            description: profile.description,
-            image: profile.image,
-            image_medium: profile.image_medium,
-            image_small: profile.image_small,
-            token_id: profile.token_id,
-        },
-        {
-            onConflict: "id",
-        },
-    );
+    return client
+        .from(PROFILES_TABLE)
+        .upsert(
+            {
+                id: createMemberId(profile.account, profile_contract),
+                account: profile.account,
+                profile_contract,
+                username: profile.username,
+                name: profile.name,
+                description: profile.description,
+                image: profile.image,
+                image_medium: profile.image_medium,
+                image_small: profile.image_small,
+                token_id: profile.token_id,
+            },
+            {
+                onConflict: "id",
+            },
+        );
 };
 
 export const getProfile = async (
@@ -95,7 +97,7 @@ export const getProfile = async (
         .maybeSingle();
 };
 
-export const deleteProfile = async (
+export const upsertAnonymousProfile = async (
     client: SupabaseClient,
     account: string,
     profile_contract: string,
@@ -109,13 +111,20 @@ export const deleteProfile = async (
 
     return await client
         .from(PROFILES_TABLE)
-        .update({
-            username: "anonymous",
-            name: "Anonymous",
-            description: "This user does not have a profile",
-            image: defaultProfileImageIpfsHash,
-            image_medium: defaultProfileImageIpfsHash,
-            image_small: defaultProfileImageIpfsHash,
-        })
-        .eq("id", createMemberId(account, profile_contract));
+        .upsert(
+            {
+                id: createMemberId(account, profile_contract),
+                account,
+                profile_contract,
+                username: "anonymous",
+                name: "Anonymous",
+                description: "This user does not have a profile",
+                image: defaultProfileImageIpfsHash,
+                image_medium: defaultProfileImageIpfsHash,
+                image_small: defaultProfileImageIpfsHash,
+            },
+            {
+                onConflict: "id",
+            },
+        );
 };
