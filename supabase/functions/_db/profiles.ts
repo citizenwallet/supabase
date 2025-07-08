@@ -64,49 +64,34 @@ export const upsertProfile = async (
     profile: ProfileWithTokenId,
     profile_contract: string,
 ): Promise<PostgrestSingleResponse<null>> => {
-    return client
-        .from(PROFILES_TABLE)
-        .upsert(
-            {
-                id: createMemberId(profile.account, profile_contract),
-                account: profile.account,
-                profile_contract,
-                username: profile.username,
-                name: profile.name,
-                description: profile.description,
-                image: profile.image,
-                image_medium: profile.image_medium,
-                image_small: profile.image_small,
-                token_id: profile.token_id,
-            },
-            {
-                onConflict: "id",
-            },
-        );
+    return client.from(PROFILES_TABLE).upsert(
+        {
+            id: createMemberId(profile.account, profile_contract),
+            account: profile.account,
+            profile_contract,
+            username: profile.username,
+            name: profile.name,
+            description: profile.description,
+            image: profile.image,
+            image_medium: profile.image_medium,
+            image_small: profile.image_small,
+            token_id: profile.token_id,
+        },
+        {
+            onConflict: "id",
+        },
+    );
 };
 
 export const getProfile = async (
     client: SupabaseClient,
     account: string,
     profile_contract: string,
-): Promise<PostgrestSingleResponse<ProfileWithProfileContractAddress | null>> => {
+): Promise<
+    PostgrestSingleResponse<ProfileWithProfileContractAddress | null>
+> => {
     const memberId = createMemberId(account, profile_contract);
-    return client.from(PROFILES_TABLE)
-        .select()
-        .eq("id", memberId)
-        .maybeSingle();
-};
-
-export const getProfileFromId = async (
-    client: SupabaseClient,
-    token_id: string,
-    profile_contract: string,
-): Promise<PostgrestSingleResponse<Profile | null>> => {
-    return await client
-        .from(PROFILES_TABLE)
-        .select()
-        .eq("token_id", token_id)
-        .eq("profile_contract", profile_contract)
+    return client.from(PROFILES_TABLE).select().eq("id", memberId)
         .maybeSingle();
 };
 
@@ -120,11 +105,6 @@ export const deleteProfile = async (
     );
     if (!defaultProfileImageIpfsHash) {
         throw new Error("DEFAULT_PROFILE_IMAGE_IPFS_HASH is not set");
-    }
-
-    const ipfsUrl = Deno.env.get("IPFS_URL");
-    if (!ipfsUrl) {
-        throw new Error("IPFS_URL is not set");
     }
 
     return await client
