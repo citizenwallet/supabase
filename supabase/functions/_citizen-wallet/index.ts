@@ -1,4 +1,4 @@
-import { CommunityConfig, type Profile, Config } from "npm:@citizenwallet/sdk";
+import { CommunityConfig, Config, type Profile } from "npm:@citizenwallet/sdk";
 import { formatUnits } from "npm:ethers";
 
 import eureGnosisCommunityJson from "./eure_gnosis_community.json" with {
@@ -40,6 +40,13 @@ export interface ERC1152TransferExtraData {
 
 export interface MetadataUpdateData {
     _tokenId: string;
+}
+
+export interface ProfileDeleteData {
+    to: string;
+    from: string;
+    topic: string;
+    tokenId: string;
 }
 
 export interface RoleChangeData {
@@ -86,7 +93,7 @@ export const getCommunityConfigs = async (): Promise<CommunityConfig[]> => {
     try {
         const eureGnosisConfig = getEureGnosisCommunityConfig();
         const urlConfigs = await getCommunityConfigsFromUrl();
-        
+
         return [eureGnosisConfig, ...urlConfigs];
     } catch (error) {
         console.error("Error getting community configs:", error);
@@ -117,7 +124,7 @@ export const createERC20TransferNotification = (
     } else if ("amount" in data) {
         value = formatUnits(data.amount, token.decimals);
     } else {
-        value = ''
+        value = "";
     }
 
     if (profile) {
