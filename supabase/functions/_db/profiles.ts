@@ -89,10 +89,42 @@ export const getProfile = async (
     client: SupabaseClient,
     account: string,
     profile_contract: string,
-): Promise<PostgrestSingleResponse<Profile | null>> => {
+): Promise<
+    PostgrestSingleResponse<ProfileWithProfileContractAddress | null>
+> => {
     const memberId = createMemberId(account, profile_contract);
-    return client.from(PROFILES_TABLE)
-        .select()
-        .eq("id", memberId)
+    return client.from(PROFILES_TABLE).select().eq("id", memberId)
         .maybeSingle();
+};
+
+export const upsertAnonymousProfile = async (
+    client: SupabaseClient,
+    account: string,
+    profile_contract: string,
+): Promise<PostgrestSingleResponse<null>> => {
+    const defaultProfileImageIpfsHash = Deno.env.get(
+        "DEFAULT_PROFILE_IMAGE_IPFS_HASH",
+    );
+    if (!defaultProfileImageIpfsHash) {
+        throw new Error("DEFAULT_PROFILE_IMAGE_IPFS_HASH is not set");
+    }
+
+    return await client
+        .from(PROFILES_TABLE)
+        .upsert(
+            {
+                id: createMemberId(account, profile_contract),
+                account,
+                profile_contract,
+                username: "anonymous",
+                name: "Anonymous",
+                description: "This user does not have a profile",
+                image: defaultProfileImageIpfsHash,
+                image_medium: defaultProfileImageIpfsHash,
+                image_small: defaultProfileImageIpfsHash,
+            },
+            {
+                onConflict: "id",
+            },
+        );
 };
