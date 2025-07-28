@@ -1,10 +1,6 @@
 import { CommunityConfig, Config, type Profile } from "npm:@citizenwallet/sdk";
 import { formatUnits } from "npm:ethers";
 
-import eureGnosisCommunityJson from "./eure_gnosis_community.json" with {
-    type: "json",
-};
-
 // Define under the functions service in docker-compose.yml of the supabase clone.
 // Define value in docker/.env
 const COMMUNITIES_CONFIG_URL = Deno.env.get("COMMUNITIES_CONFIG_URL");
