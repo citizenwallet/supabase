@@ -79,9 +79,6 @@ export const getCommunityConfigs = async (): Promise<CommunityConfig[]> => {
 
         return communities.map((community: CommunityT) =>
             new CommunityConfig(community.json)
-        ).filter(
-            (communityJson: CommunityConfig) =>
-                !communityJson.config.community.hidden,
         );
     } catch (error) {
         console.error("Error fetching communities:", error);
