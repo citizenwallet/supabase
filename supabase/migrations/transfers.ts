@@ -69,7 +69,6 @@ const processTransactions = async (
 
           for (const log of logs) {
 
-
             
            let transferData: ERC20TransferData | ERC1152TransferData ;
   if (log.dest === '0x56744910f7dEcD48c1a7FA61B4C317b15E99F156') {
@@ -162,10 +161,7 @@ const processTransactions = async (
 
     }
 
-
   
-
-
 
     
 

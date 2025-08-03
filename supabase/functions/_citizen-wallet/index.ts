@@ -1,10 +1,6 @@
 import { CommunityConfig, Config, type Profile } from "npm:@citizenwallet/sdk";
 import { formatUnits } from "npm:ethers";
 
-import eureGnosisCommunityJson from "./eure_gnosis_community.json" with {
-    type: "json",
-};
-
 // Define under the functions service in docker-compose.yml of the supabase clone.
 // Define value in docker/.env
 const COMMUNITIES_CONFIG_URL = Deno.env.get("COMMUNITIES_CONFIG_URL");
@@ -56,13 +52,16 @@ export interface RoleChangeData {
     account: string;
 }
 
-const getEureGnosisCommunityConfig = (): CommunityConfig => {
-    return new CommunityConfig(eureGnosisCommunityJson);
-};
+interface CommunityT {
+    alias: string;
+    chain_id: number;
+    active: boolean;
+    created_at: Date;
+    updated_at: Date;
+    json: Config;
+}
 
-const getCommunityConfigsFromUrl = async (): Promise<
-    CommunityConfig[]
-> => {
+export const getCommunityConfigs = async (): Promise<CommunityConfig[]> => {
     if (!COMMUNITIES_CONFIG_URL) {
         throw new Error(
             "COMMUNITIES_CONFIG_URL environment variable is not set",
@@ -76,27 +75,13 @@ const getCommunityConfigsFromUrl = async (): Promise<
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const communitiesJson = await response.json() as Config[];
+        const communities = await response.json() as CommunityT[];
 
-        return communitiesJson.map((community: Config) =>
-            new CommunityConfig(community)
-        ).filter(
-            (community: CommunityConfig) => !community.config.community.hidden,
+        return communities.map((community: CommunityT) =>
+            new CommunityConfig(community.json)
         );
     } catch (error) {
         console.error("Error fetching communities:", error);
-        throw error;
-    }
-};
-
-export const getCommunityConfigs = async (): Promise<CommunityConfig[]> => {
-    try {
-        const eureGnosisConfig = getEureGnosisCommunityConfig();
-        const urlConfigs = await getCommunityConfigsFromUrl();
-
-        return [eureGnosisConfig, ...urlConfigs];
-    } catch (error) {
-        console.error("Error getting community configs:", error);
         throw error;
     }
 };

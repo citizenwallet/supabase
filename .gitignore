@@ -1,5 +1,5 @@
 node_modules
-.env
 .branches
 .temp
 firebase.json
+config.bat
