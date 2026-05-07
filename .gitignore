@@ -1,5 +1,9 @@
 node_modules
+
 .branches
+
 .temp
+
 firebase.json
+
 config.bat
